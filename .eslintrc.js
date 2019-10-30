@@ -1,0 +1,34 @@
+const path = require('path');
+
+module.exports = {
+  env: {
+    browser: false,
+    es6: true,
+    node: true,
+  },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: path.join(process.cwd(), 'tsconfig.json'),
+    tsconfigRootDir: path.resolve(__dirname),
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint'],
+  extends: ['plugin:@typescript-eslint/recommended', 'prettier', 'prettier/@typescript-eslint', 'prettier/standard'],
+  rules: {
+    indent: 'off',
+    '@typescript-eslint/indent': ['error', 2],
+    '@typescript-eslint/member-ordering': 'error',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        vars: 'all',
+        args: 'after-used',
+        ignoreRestSiblings: false,
+        argsIgnorePattern: '^_',
+      },
+    ],
+    '@typescript-eslint/no-var-requires': 'off',
+  },
+};
