@@ -1,7 +1,27 @@
-import { isObject } from 'util';
+import { isObject } from '../utils';
 
-export function createProxy<T extends object>(target: T): T;
-export function createProxy(target: object) {
+export const targetMap = new WeakMap<any, any>();
+
+const rawToProxy = new WeakMap<any, any>();
+const proxyToRaw = new WeakMap<any, any>();
+
+// const rawToTrackProxy = new WeakMap<any, any>();
+// const trackProxyToRaw = new WeakMap<any, any>();
+
+// const rawToReadonly = new WeakMap<any, any>();
+// const readonlyToRaw = new WeakMap<any, any>();
+
+export function toRaw<T>(observed: T): T {
+  return proxyToRaw.get(observed) || observed;
+}
+
+function createProxy(
+  target: unknown,
+  toProxy: WeakMap<any, any>,
+  toRaw: WeakMap<any, any>,
+  shouldTrack: boolean,
+  shouldTrigger: boolean,
+): any {
   if (!isObject(target)) {
     if (__DEV__) {
       console.warn(`value cannot be made proxy: ${String(target)}`);
@@ -9,19 +29,44 @@ export function createProxy(target: object) {
     return target;
   }
 
-  const observed = new Proxy(target, {
-    get: (target: object, key: string | symbol, receiver: object) => {
-      const res = Reflect.get(target, key, receiver);
+  const observed = toProxy.get(target);
+  if (observed !== void 0) {
+    return observed;
+  }
 
-      return isObject(res) ? createProxy(res) : res;
-    },
+  if (toRaw.has(target)) {
+    return target;
+  }
 
-    set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
-      const result = Reflect.set(target, key, value, receiver);
+  if (shouldTrigger) {
+    return createTriggerProxy(target);
+  }
+  if (shouldTrack) {
+    return createTrackProxy(target);
+  }
+  return createReadonlyProxy(target);
+}
 
-      return result;
-    },
-  });
+// track change for reducer
+export function createTriggerProxy<T extends object>(target: T): T {
+  const observed = createProxy(target, rawToProxy, proxyToRaw, false, true);
+
+  rawToProxy.set(target, observed);
+  proxyToRaw.set(observed, target);
+
+  if (!targetMap.has(target)) {
+    targetMap.set(target, new Map());
+  }
 
   return observed;
+}
+
+// readonly and track dependence for computed and component
+export function createTrackProxy<T extends object>(target: T): T {
+  return target;
+}
+
+// readonly for effect
+export function createReadonlyProxy<T extends object>(target: T): T {
+  return target;
 }

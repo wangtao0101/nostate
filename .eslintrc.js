@@ -13,12 +13,17 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint'],
-  extends: ['plugin:@typescript-eslint/recommended', 'prettier', 'prettier/@typescript-eslint', 'prettier/standard'],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+    'prettier/@typescript-eslint',
+    'prettier/standard',
+  ],
   rules: {
     indent: 'off',
     '@typescript-eslint/indent': ['error', 2],
     '@typescript-eslint/member-ordering': 'error',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -30,5 +35,6 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
   },
 };
