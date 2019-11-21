@@ -1,23 +1,64 @@
 import { isObject } from '../utils';
+import {
+  createTriggerProxyHandles,
+  createTrackProxyHandles,
+  createReadonlyProxyHandles,
+} from './handle';
 
-export const targetMap = new WeakMap<any, any>();
+export enum ReactiveSourceType {
+  COMPUTED,
+  COMPONENT,
+}
 
-const rawToProxy = new WeakMap<any, any>();
-const proxyToRaw = new WeakMap<any, any>();
+export interface ReactiveSource {
+  _isSource: true;
+  type: ReactiveSourceType;
+  deps: Array<Dep>;
+}
 
-// const rawToTrackProxy = new WeakMap<any, any>();
-// const trackProxyToRaw = new WeakMap<any, any>();
+export type Dep = Set<ReactiveSource>;
+export type KeyToDepMap = Map<any, Dep>;
+export const targetMap = new WeakMap<any, KeyToDepMap>();
 
-// const rawToReadonly = new WeakMap<any, any>();
-// const readonlyToRaw = new WeakMap<any, any>();
+const triggerRawToProxy = new WeakMap<any, WeakMap<any, any>>();
+const triggerProxyToRaw = new WeakMap<any, any>();
 
-export function toRaw<T>(observed: T): T {
-  return proxyToRaw.get(observed) || observed;
+const trackRawToProxy = new WeakMap<any, WeakMap<any, any>>();
+const trackProxyToRaw = new WeakMap<any, any>();
+
+const readonlyRawToProxy = new WeakMap<any, WeakMap<any, any>>();
+const readonlyProxyToRaw = new WeakMap<any, any>();
+
+export function getProxy<T>(
+  source: ReactiveSource,
+  target: T,
+  toProxy: WeakMap<any, WeakMap<any, any>>,
+): any {
+  const sourceTargetMap = toProxy.get(target);
+  if (sourceTargetMap == null) {
+    return undefined;
+  }
+  return sourceTargetMap.get(source);
+}
+
+export function setProxy(
+  source: ReactiveSource,
+  target: any,
+  proxy: any,
+  toProxy: WeakMap<any, WeakMap<any, any>>,
+): void {
+  let sourceTargetMap = toProxy.get(target);
+  if (sourceTargetMap == null) {
+    sourceTargetMap = new WeakMap<any, any>();
+    toProxy.set(target, sourceTargetMap);
+  }
+  sourceTargetMap.set(source, proxy);
 }
 
 function createProxy(
+  source: ReactiveSource,
   target: unknown,
-  toProxy: WeakMap<any, any>,
+  toProxy: WeakMap<any, WeakMap<any, any>>,
   toRaw: WeakMap<any, any>,
   shouldTrack: boolean,
   shouldTrigger: boolean,
@@ -29,7 +70,7 @@ function createProxy(
     return target;
   }
 
-  const observed = toProxy.get(target);
+  let observed = getProxy(source, target, toProxy);
   if (observed !== void 0) {
     return observed;
   }
@@ -38,21 +79,19 @@ function createProxy(
     return target;
   }
 
+  let handlers;
   if (shouldTrigger) {
-    return createTriggerProxy(target);
+    handlers = createTriggerProxyHandles(source);
   }
   if (shouldTrack) {
-    return createTrackProxy(target);
+    handlers = createTrackProxyHandles(source);
   }
-  return createReadonlyProxy(target);
-}
+  handlers = createReadonlyProxyHandles(source);
 
-// track change for reducer
-export function createTriggerProxy<T extends object>(target: T): T {
-  const observed = createProxy(target, rawToProxy, proxyToRaw, false, true);
+  observed = new Proxy(target, handlers);
 
-  rawToProxy.set(target, observed);
-  proxyToRaw.set(observed, target);
+  toRaw.set(observed, target);
+  setProxy(source, target, observed, toProxy);
 
   if (!targetMap.has(target)) {
     targetMap.set(target, new Map());
@@ -61,12 +100,36 @@ export function createTriggerProxy<T extends object>(target: T): T {
   return observed;
 }
 
+// track change for reducer
+export function createTriggerProxy<T extends object>(source: ReactiveSource, target: T): T {
+  const observed = createProxy(source, target, triggerRawToProxy, triggerProxyToRaw, false, true);
+  return observed;
+}
+
 // readonly and track dependence for computed and component
-export function createTrackProxy<T extends object>(target: T): T {
-  return target;
+export function createTrackProxy<T extends object>(source: ReactiveSource, target: T): T {
+  const observed = createProxy(source, target, trackRawToProxy, trackProxyToRaw, true, false);
+  return observed;
 }
 
 // readonly for effect
-export function createReadonlyProxy<T extends object>(target: T): T {
-  return target;
+export function createReadonlyProxy<T extends object>(source: ReactiveSource, target: T): T {
+  const observed = createProxy(
+    source,
+    target,
+    readonlyRawToProxy,
+    readonlyProxyToRaw,
+    false,
+    false,
+  );
+  return observed;
+}
+
+export function toRaw<T>(observed: T): T {
+  return (
+    trackProxyToRaw.get(observed) ||
+    trackProxyToRaw.get(observed) ||
+    trackProxyToRaw.get(observed) ||
+    observed
+  );
 }
