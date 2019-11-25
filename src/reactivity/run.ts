@@ -3,7 +3,6 @@ import { isArray } from 'util';
 
 export const ITERATE_KEY = Symbol('iterate');
 
-let isBatchUpdate = false;
 const computedRunners = new Set<ReactiveSource>();
 const componentRunners = new Set<ReactiveSource>();
 
@@ -74,23 +73,8 @@ export function track(
 }
 
 export function run(): void {
-  if (isBatchUpdate) {
-    return;
-  }
   computedRunners.forEach(scheduleRun);
   componentRunners.forEach(scheduleRun);
-}
-
-export function batchRun(): void {
-  if (isBatchUpdate) {
-    return;
-  }
-  computedRunners.forEach(scheduleRun);
-  componentRunners.forEach(scheduleRun);
-}
-
-export function setBatchRun(isBatch: boolean): void {
-  isBatchUpdate = isBatch;
 }
 
 function scheduleRun(_source: ReactiveSource): void {
