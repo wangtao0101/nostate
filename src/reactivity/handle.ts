@@ -1,6 +1,6 @@
 import { isObject, hasOwn } from '../utils';
 import { OperationTypes, track, trigger, ReactiveEffect } from './effect';
-import { createReactiveProxy, createTrackProxy, toRaw } from './proxy';
+import { toRaw, reactive } from './reactive';
 import { TRACK_LOCKED, VALUE_LOCKED } from './lock';
 
 function createGetter(effect?: ReactiveEffect) {
@@ -10,16 +10,12 @@ function createGetter(effect?: ReactiveEffect) {
     if (effect) {
       // must be component effect, should track
       track(target, OperationTypes.GET, effect, key);
-      return isObj ? createTrackProxy(res, effect) : res;
-    }
-    if (effect) {
-      // must be component effect
-      return;
+      return isObj ? reactive(res, effect) : res;
     }
     if (!TRACK_LOCKED) {
       track(target, OperationTypes.GET, undefined, key);
     }
-    return isObj ? createReactiveProxy(res) : res;
+    return isObj ? reactive(res) : res;
   };
 }
 
@@ -82,6 +78,9 @@ export function createReactiveProxyHandles(): ProxyHandler<object> {
       return result;
     },
     deleteProperty: (target: object, key: string | symbol): boolean => {
+      if (VALUE_LOCKED) {
+        throw new Error(`Cannot delete key: ${String(key)} of hux state except in reducer.`);
+      }
       const hadKey = hasOwn(target, key);
       const result = Reflect.deleteProperty(target, key);
       if (result && hadKey) {

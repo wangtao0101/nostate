@@ -1,18 +1,14 @@
 import { isObject } from '../utils';
 import { createTrackProxyHandles, createReactiveProxyHandles } from './handle';
-import { ReactiveEffect, targetMap, ReactiveEffectType } from './effect';
+import { ReactiveEffect, targetMap } from './effect';
 
-const rawToProxy = new WeakMap<any, WeakMap<any, any>>();
-const proxyToRaw = new WeakMap<any, any>();
+const rawToReactive = new WeakMap<any, WeakMap<any, any>>();
+const reactiveToRaw = new WeakMap<any, any>();
 
-const trackRawToProxy = new WeakMap<any, WeakMap<any, any>>();
-const trackProxyToRaw = new WeakMap<any, any>();
+const trackRawToReactive = new WeakMap<any, WeakMap<any, any>>();
+const trackReactiveToRaw = new WeakMap<any, any>();
 
-const EMPTY_EFFECT: ReactiveEffect = {
-  _isEffect: true,
-  type: ReactiveEffectType.EFFECT,
-  deps: [],
-};
+const EMPTY_EFFECT: ReactiveEffect = {} as any;
 
 export function getProxy<T>(
   target: T,
@@ -40,7 +36,7 @@ export function setProxy(
   sourceTargetMap.set(effect, proxy);
 }
 
-function createProxy(
+function createReactiveObject(
   target: unknown,
   toProxy: WeakMap<any, WeakMap<any, any>>,
   toRaw: WeakMap<any, any>,
@@ -81,22 +77,17 @@ function createProxy(
   return observed;
 }
 
-export function createReactiveProxy<T extends object>(target: T): T {
-  const observed = createProxy(target, rawToProxy, proxyToRaw);
-  return observed;
+export function reactive<T>(target: T, effect?: ReactiveEffect): T {
+  if (effect) {
+    return createReactiveObject(target, trackRawToReactive, trackReactiveToRaw, effect);
+  }
+  return createReactiveObject(target, rawToReactive, reactiveToRaw);
 }
 
-// readonly and track dependence for computed and component
-export function createTrackProxy<T extends object>(target: T, source?: ReactiveEffect): T {
-  const observed = createProxy(target, trackRawToProxy, trackProxyToRaw, source);
-  return observed;
+export function isReactive(value: unknown): boolean {
+  return reactiveToRaw.has(value) || trackReactiveToRaw.has(value);
 }
 
 export function toRaw<T>(observed: T): T {
-  return (
-    trackProxyToRaw.get(observed) ||
-    trackProxyToRaw.get(observed) ||
-    trackProxyToRaw.get(observed) ||
-    observed
-  );
+  return reactiveToRaw.get(observed) || trackReactiveToRaw.get(observed) || observed;
 }

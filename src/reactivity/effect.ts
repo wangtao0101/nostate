@@ -1,4 +1,5 @@
 import { isArray } from 'util';
+import { EMPTY_OBJ } from '../utils';
 
 export const ITERATE_KEY = Symbol('iterate');
 
@@ -8,10 +9,19 @@ export enum ReactiveEffectType {
   EFFECT,
 }
 
-export interface ReactiveEffect {
+export interface ReactiveEffectOptions {
+  lazy?: boolean;
+  scheduler?: (run: Function) => void;
+}
+
+export interface ReactiveEffect<T = any> {
   _isEffect: true;
   type: ReactiveEffectType;
   deps: Array<Dep>;
+  options: ReactiveEffectOptions;
+
+  raw: () => T;
+  (): T;
 }
 
 export type Dep = Set<ReactiveEffect>;
@@ -31,6 +41,48 @@ export const enum OperationTypes {
   GET = 'GET',
   HAS = 'HAS',
   ITERATE = 'ITERATE',
+}
+
+export function isEffect(fn: any): fn is ReactiveEffect {
+  return fn != null && fn._isEffect === true;
+}
+
+export function effect<T = any>(
+  fn: () => T,
+  options: ReactiveEffectOptions = EMPTY_OBJ,
+): ReactiveEffect<T> {
+  if (isEffect(fn)) {
+    fn = fn.raw;
+  }
+  const effect = createReactiveEffect(fn, options);
+  if (!options.lazy) {
+    effect();
+  }
+  return effect;
+}
+
+function createReactiveEffect<T = any>(
+  fn: () => T,
+  options: ReactiveEffectOptions,
+): ReactiveEffect<T> {
+  const effect = function reactiveEffect(...args: unknown[]): unknown {
+    return run(effect, fn, args);
+  } as ReactiveEffect;
+  effect._isEffect = true;
+  effect.raw = fn;
+  effect.deps = [];
+  effect.options = options;
+  return effect;
+}
+
+function run(effect: ReactiveEffect, fn: Function, args: unknown[]): unknown {
+  // currently not support nested effect
+  try {
+    activeEffect = effect;
+    return fn(...args);
+  } finally {
+    activeEffect = undefined;
+  }
 }
 
 export function trigger(target: object, type: OperationTypes, key?: unknown): void {
@@ -87,7 +139,7 @@ export function track(
   }
 }
 
-export function run(): void {
+export function runxx(): void {
   computedRunners.forEach(scheduleRun);
   componentRunners.forEach(scheduleRun);
 }
