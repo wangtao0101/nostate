@@ -1,10 +1,27 @@
-import { ReactiveSource, targetMap, ReactiveSourceType } from './proxy';
 import { isArray } from 'util';
 
 export const ITERATE_KEY = Symbol('iterate');
 
-const computedRunners = new Set<ReactiveSource>();
-const componentRunners = new Set<ReactiveSource>();
+export enum ReactiveEffectType {
+  COMPUTED,
+  COMPONENT,
+  EFFECT,
+}
+
+export interface ReactiveEffect {
+  _isEffect: true;
+  type: ReactiveEffectType;
+  deps: Array<Dep>;
+}
+
+export type Dep = Set<ReactiveEffect>;
+export type KeyToDepMap = Map<any, Dep>;
+export const targetMap = new WeakMap<any, KeyToDepMap>();
+
+export let activeEffect: ReactiveEffect | undefined;
+
+const computedRunners = new Set<ReactiveEffect>();
+const componentRunners = new Set<ReactiveEffect>();
 
 export const enum OperationTypes {
   SET = 'SET',
@@ -16,12 +33,7 @@ export const enum OperationTypes {
   ITERATE = 'ITERATE',
 }
 
-export function trigger(
-  _source: ReactiveSource,
-  target: object,
-  type: OperationTypes,
-  key?: unknown,
-): void {
+export function trigger(target: object, type: OperationTypes, key?: unknown): void {
   const depsMap = targetMap.get(target);
   if (depsMap === void 0) {
     // never been tracked
@@ -47,9 +59,9 @@ export function trigger(
 }
 
 export function track(
-  source: ReactiveSource,
   target: object,
   type: OperationTypes,
+  effect?: ReactiveEffect,
   key?: unknown,
 ): void {
   if (type === OperationTypes.ITERATE) {
@@ -66,9 +78,12 @@ export function track(
     depsMap.set(key, (dep = new Set()));
   }
 
-  if (!dep.has(source)) {
-    dep.add(source);
-    source.deps.push(dep);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const currentEffect = effect || activeEffect!;
+
+  if (!dep.has(currentEffect)) {
+    dep.add(currentEffect);
+    currentEffect.deps.push(dep);
   }
 }
 
@@ -77,18 +92,18 @@ export function run(): void {
   componentRunners.forEach(scheduleRun);
 }
 
-function scheduleRun(_source: ReactiveSource): void {
+function scheduleRun(_source: ReactiveEffect): void {
   //
 }
 
 function addRunners(
-  componentRunners: Set<ReactiveSource>,
-  computedRunners: Set<ReactiveSource>,
-  sourcesToAdd: Set<ReactiveSource> | undefined,
+  componentRunners: Set<ReactiveEffect>,
+  computedRunners: Set<ReactiveEffect>,
+  sourcesToAdd: Set<ReactiveEffect> | undefined,
 ): void {
   if (sourcesToAdd !== void 0) {
     sourcesToAdd.forEach(source => {
-      if (source.type === ReactiveSourceType.COMPUTED) {
+      if (source.type === ReactiveEffectType.COMPUTED) {
         computedRunners.add(source);
       } else {
         componentRunners.add(source);

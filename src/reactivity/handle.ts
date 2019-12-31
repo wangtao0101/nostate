@@ -1,42 +1,50 @@
 import { isObject, hasOwn } from '../utils';
-import { OperationTypes, track, trigger } from './run';
-import {
-  createTriggerProxy,
-  createTrackProxy,
-  createReadonlyProxy,
-  toRaw,
-  ReactiveSource,
-} from './proxy';
+import { OperationTypes, track, trigger, ReactiveEffect } from './effect';
+import { createReactiveProxy, createTrackProxy, toRaw } from './proxy';
+import { TRACK_LOCKED, VALUE_LOCKED } from './lock';
 
-function createGetter(source: ReactiveSource, shouldTrack: boolean, shouldTrigger: boolean) {
+function createGetter(effect?: ReactiveEffect) {
   return function get(target: object, key: string | symbol, receiver: object): any {
     const res = Reflect.get(target, key, receiver);
     const isObj = isObject(res);
-    if (shouldTrigger) {
-      return isObj ? createTriggerProxy(source, res) : res;
+    if (effect) {
+      // must be component effect, should track
+      track(target, OperationTypes.GET, effect, key);
+      return isObj ? createTrackProxy(res, effect) : res;
     }
-    if (shouldTrack) {
-      track(source, target, OperationTypes.GET, key);
-      return isObj ? createTrackProxy(source, res) : res;
+    if (effect) {
+      // must be component effect
+      return;
     }
-    return isObj ? createReadonlyProxy(source, res) : res;
+    if (!TRACK_LOCKED) {
+      track(target, OperationTypes.GET, undefined, key);
+    }
+    return isObj ? createReactiveProxy(res) : res;
   };
 }
 
-function createHas(source: ReactiveSource) {
+function createHas(effect?: ReactiveEffect) {
   return function has(target: object, key: string | symbol): boolean {
     const result = Reflect.has(target, key);
-    track(source, target, OperationTypes.HAS, key);
+    if (effect && !TRACK_LOCKED) {
+      track(target, OperationTypes.HAS, effect, key);
+    }
     return result;
   };
 }
 
-function createOwnKeys(source: ReactiveSource) {
+function createOwnKeys(effect?: ReactiveEffect) {
   return function ownKeys(target: object): (string | number | symbol)[] {
-    track(source, target, OperationTypes.ITERATE);
+    if (effect && !TRACK_LOCKED) {
+      track(target, OperationTypes.HAS, effect);
+    }
     return Reflect.ownKeys(target);
   };
 }
+
+const get = createGetter();
+const has = createHas();
+const ownKeys = createOwnKeys();
 
 function lockSetter(
   _target: object,
@@ -51,10 +59,14 @@ function lockDeleteProperty(_target: object, key: string | symbol): boolean {
   throw new Error(`Cannot deleteProperty: ${String(key)} of hux state except in reducer.`);
 }
 
-export function createTriggerProxyHandles(source: ReactiveSource): ProxyHandler<object> {
+export function createReactiveProxyHandles(): ProxyHandler<object> {
   return {
-    get: createGetter(source, false, true),
+    get,
     set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
+      if (VALUE_LOCKED) {
+        throw new Error(`Cannot set key: ${String(key)} of hux state except in reducer.`);
+      }
+
       const rawValue = toRaw(value);
 
       const hadKey = hasOwn(target, key);
@@ -62,9 +74,9 @@ export function createTriggerProxyHandles(source: ReactiveSource): ProxyHandler<
 
       if (target === toRaw(receiver)) {
         if (hadKey) {
-          trigger(source, target, OperationTypes.SET, key);
+          trigger(target, OperationTypes.SET, key);
         } else {
-          trigger(source, target, OperationTypes.ADD, key);
+          trigger(target, OperationTypes.ADD, key);
         }
       }
       return result;
@@ -73,27 +85,21 @@ export function createTriggerProxyHandles(source: ReactiveSource): ProxyHandler<
       const hadKey = hasOwn(target, key);
       const result = Reflect.deleteProperty(target, key);
       if (result && hadKey) {
-        trigger(source, target, OperationTypes.DELETE, key);
+        trigger(target, OperationTypes.DELETE, key);
       }
       return result;
     },
+    has,
+    ownKeys,
   };
 }
 
-export function createTrackProxyHandles(source: ReactiveSource): ProxyHandler<object> {
+export function createTrackProxyHandles(effect: ReactiveEffect): ProxyHandler<object> {
   return {
-    get: createGetter(source, true, false),
+    get: createGetter(effect),
     set: lockSetter,
     deleteProperty: lockDeleteProperty,
-    has: createHas(source),
-    ownKeys: createOwnKeys(source),
-  };
-}
-
-export function createReadonlyProxyHandles(source: ReactiveSource): ProxyHandler<object> {
-  return {
-    get: createGetter(source, false, false),
-    set: lockSetter,
-    deleteProperty: lockDeleteProperty,
+    has: createHas(effect),
+    ownKeys: createOwnKeys(effect),
   };
 }
