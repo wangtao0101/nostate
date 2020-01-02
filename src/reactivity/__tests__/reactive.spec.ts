@@ -1,7 +1,10 @@
 import { reactive, isReactive, toRaw } from '../reactive';
-import { unlockValue, lockValue } from '../lock';
+import { mutation } from '../lock';
+import { mockWarn } from '../../test-utils/mockWarn';
 
 describe('reactivity/reactive', () => {
+  mockWarn();
+
   test('Object', () => {
     const original = { foo: 1 };
     const observed = reactive(original);
@@ -70,16 +73,16 @@ describe('reactivity/reactive', () => {
     const original: any = { foo: 1 };
     const observed = reactive(original);
     // set
-    unlockValue();
-    observed.bar = 1;
-    lockValue();
+    mutation(() => {
+      observed.bar = 1;
+    });
     expect(observed.bar).toBe(1);
     expect(original.bar).toBe(1);
 
     // delete
-    unlockValue();
-    delete observed.foo;
-    lockValue();
+    mutation(() => {
+      delete observed.foo;
+    });
     expect('foo' in observed).toBe(false);
     expect('foo' in original).toBe(false);
   });
@@ -107,9 +110,9 @@ describe('reactivity/reactive', () => {
     const observed = reactive<{ foo?: object }>({});
     const raw = {};
 
-    unlockValue();
-    observed.foo = raw;
-    lockValue();
+    mutation(() => {
+      observed.foo = raw;
+    });
 
     expect(observed.foo).not.toBe(raw);
     expect(isReactive(observed.foo)).toBe(true);
@@ -134,9 +137,9 @@ describe('reactivity/reactive', () => {
     const original2 = { bar: 2 };
     const observed = reactive(original);
     const observed2 = reactive(original2);
-    unlockValue();
-    observed.bar = observed2;
-    lockValue();
+    mutation(() => {
+      observed.bar = observed2;
+    });
     expect(observed.bar).toBe(observed2);
     expect(original.bar).toBe(original2);
   });
@@ -172,43 +175,32 @@ describe('reactivity/reactive', () => {
   //   expect(typeof obj.b).toBe(`number`)
   // })
 
-  // test('non-observable values', () => {
-  //   const assertValue = (value: any) => {
-  //     reactive(value)
-  //     expect(
-  //       `value cannot be made reactive: ${String(value)}`
-  //     ).toHaveBeenWarnedLast()
-  //   }
+  test('non-observable values', () => {
+    const assertValue = (value: any): void => {
+      reactive(value);
+      expect(`value cannot be made reactive: ${String(value)}`).toHaveBeenWarnedLast();
+    };
 
-  //   // number
-  //   assertValue(1)
-  //   // string
-  //   assertValue('foo')
-  //   // boolean
-  //   assertValue(false)
-  //   // null
-  //   assertValue(null)
-  //   // undefined
-  //   assertValue(undefined)
-  //   // symbol
-  //   const s = Symbol()
-  //   assertValue(s)
+    // number
+    assertValue(1);
+    // string
+    assertValue('foo');
+    // boolean
+    assertValue(false);
+    // null
+    assertValue(null);
+    // undefined
+    assertValue(undefined);
+    // symbol
+    const s = Symbol();
+    assertValue(s);
 
-  //   // built-ins should work and return same value
-  //   const p = Promise.resolve()
-  //   expect(reactive(p)).toBe(p)
-  //   const r = new RegExp('')
-  //   expect(reactive(r)).toBe(r)
-  //   const d = new Date()
-  //   expect(reactive(d)).toBe(d)
-  // })
-
-  // test('markNonReactive', () => {
-  //   const obj = reactive({
-  //     foo: { a: 1 },
-  //     bar: markNonReactive({ b: 2 })
-  //   })
-  //   expect(isReactive(obj.foo)).toBe(true)
-  //   expect(isReactive(obj.bar)).toBe(false)
-  // })
+    // built-ins should work and return same value
+    const p = Promise.resolve();
+    expect(reactive(p)).toBe(p);
+    const r = new RegExp('');
+    expect(reactive(r)).toBe(r);
+    const d = new Date();
+    expect(reactive(d)).toBe(d);
+  });
 });

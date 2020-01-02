@@ -1,6 +1,7 @@
-import { isObject } from '../utils';
+import { isObject, toRawType } from '../utils';
 import { createTrackProxyHandles, createReactiveProxyHandles } from './handle';
 import { ReactiveEffect, targetMap } from './effect';
+import { makeMap } from '../utils/makeMap';
 
 const rawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const reactiveToRaw = new WeakMap<any, any>();
@@ -9,6 +10,12 @@ const trackRawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const trackReactiveToRaw = new WeakMap<any, any>();
 
 const EMPTY_EFFECT: ReactiveEffect = {} as any;
+
+const isObservableType = /*#__PURE__*/ makeMap('Object,Array,Map,Set,WeakMap,WeakSet');
+
+const canObserve = (value: any): boolean => {
+  return isObservableType(toRawType(value));
+};
 
 export function getProxy<T>(
   target: T,
@@ -44,7 +51,7 @@ function createReactiveObject(
 ): any {
   if (!isObject(target)) {
     if (__DEV__) {
-      console.warn(`value cannot be made proxy: ${String(target)}`);
+      console.warn(`value cannot be made reactive: ${String(target)}`);
     }
     return target;
   }
@@ -55,6 +62,11 @@ function createReactiveObject(
   }
 
   if (toRaw.has(target)) {
+    return target;
+  }
+
+  // only a whitelist of value types can be observed.
+  if (!canObserve(target)) {
     return target;
   }
 
