@@ -1,5 +1,6 @@
 import { isArray } from 'util';
 import { EMPTY_OBJ } from '../utils';
+import { TriggerOpTypes, TrackOpTypes } from './operations';
 
 export const ITERATE_KEY = Symbol('iterate');
 
@@ -32,16 +33,6 @@ export let activeEffect: ReactiveEffect | undefined;
 
 const computedRunners = new Set<ReactiveEffect>();
 const componentRunners = new Set<ReactiveEffect>();
-
-export const enum OperationTypes {
-  SET = 'SET',
-  ADD = 'ADD',
-  DELETE = 'DELETE',
-  CLEAR = 'CLEAR',
-  GET = 'GET',
-  HAS = 'HAS',
-  ITERATE = 'ITERATE',
-}
 
 export function isEffect(fn: any): fn is ReactiveEffect {
   return fn != null && fn._isEffect === true;
@@ -85,14 +76,14 @@ function run(effect: ReactiveEffect, fn: Function, args: unknown[]): unknown {
   }
 }
 
-export function trigger(target: object, type: OperationTypes, key?: unknown): void {
+export function trigger(target: object, type: TriggerOpTypes, key?: unknown): void {
   const depsMap = targetMap.get(target);
   if (depsMap === void 0) {
     // never been tracked
     return;
   }
 
-  if (type === OperationTypes.CLEAR) {
+  if (type === TriggerOpTypes.CLEAR) {
     // collection being cleared, trigger all effects for target
     depsMap.forEach(dep => {
       addRunners(componentRunners, computedRunners, dep);
@@ -103,7 +94,7 @@ export function trigger(target: object, type: OperationTypes, key?: unknown): vo
       addRunners(componentRunners, computedRunners, depsMap.get(key));
     }
     // also run for iteration key on ADD | DELETE
-    if (type === OperationTypes.ADD || type === OperationTypes.DELETE) {
+    if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
       const iterationKey = isArray(target) ? 'length' : ITERATE_KEY;
       addRunners(componentRunners, computedRunners, depsMap.get(iterationKey));
     }
@@ -112,14 +103,10 @@ export function trigger(target: object, type: OperationTypes, key?: unknown): vo
 
 export function track(
   target: object,
-  type: OperationTypes,
+  type: TrackOpTypes,
   effect?: ReactiveEffect,
   key?: unknown,
 ): void {
-  if (type === OperationTypes.ITERATE) {
-    key = ITERATE_KEY;
-  }
-
   let depsMap = targetMap.get(target);
   if (depsMap === void 0) {
     targetMap.set(target, (depsMap = new Map()));

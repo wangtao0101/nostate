@@ -1,5 +1,5 @@
 import { isObject, toRawType } from '../utils';
-import { createTrackProxyHandles, createReactiveProxyHandles } from './handle';
+import { createTrackHandles, createMutableHandles } from './handle';
 import { ReactiveEffect, targetMap } from './effect';
 import { makeMap } from '../utils/makeMap';
 
@@ -72,10 +72,10 @@ function createReactiveObject(
 
   let handlers;
   if (effect) {
-    handlers = createTrackProxyHandles(effect);
+    handlers = createTrackHandles(effect);
   }
 
-  handlers = createReactiveProxyHandles();
+  handlers = createMutableHandles();
 
   observed = new Proxy(target, handlers);
 
@@ -95,6 +95,9 @@ export function reactive<T>(target: T, effect?: ReactiveEffect): T {
   }
   return createReactiveObject(target, rawToReactive, reactiveToRaw);
 }
+
+export const toReactive = <T extends unknown>(value: T, effect?: ReactiveEffect): T =>
+  isObject(value) ? reactive(value, effect) : value;
 
 export function isReactive(value: unknown): boolean {
   return reactiveToRaw.has(value) || trackReactiveToRaw.has(value);

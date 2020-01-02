@@ -1,21 +1,16 @@
-import { isObject, hasOwn } from '../utils';
-import { OperationTypes, track, trigger, ReactiveEffect } from './effect';
-import { toRaw, reactive } from './reactive';
+import { hasOwn } from '../utils';
+import { track, trigger, ReactiveEffect } from './effect';
+import { toRaw, toReactive } from './reactive';
 import { TRACK_LOCKED, VALUE_LOCKED } from './lock';
+import { TrackOpTypes, TriggerOpTypes } from './operations';
 
 function createGetter(effect?: ReactiveEffect) {
   return function get(target: object, key: string | symbol, receiver: object): any {
     const res = Reflect.get(target, key, receiver);
-    const isObj = isObject(res);
-    if (effect) {
-      // must be component effect, should track
-      track(target, OperationTypes.GET, effect, key);
-      return isObj ? reactive(res, effect) : res;
+    if (effect || !TRACK_LOCKED) {
+      track(target, TrackOpTypes.GET, effect, key);
     }
-    if (!TRACK_LOCKED) {
-      track(target, OperationTypes.GET, undefined, key);
-    }
-    return isObj ? reactive(res) : res;
+    return toReactive(res, effect);
   };
 }
 
@@ -23,7 +18,7 @@ function createHas(effect?: ReactiveEffect) {
   return function has(target: object, key: string | symbol): boolean {
     const result = Reflect.has(target, key);
     if (effect && !TRACK_LOCKED) {
-      track(target, OperationTypes.HAS, effect, key);
+      track(target, TrackOpTypes.HAS, effect, key);
     }
     return result;
   };
@@ -32,7 +27,7 @@ function createHas(effect?: ReactiveEffect) {
 function createOwnKeys(effect?: ReactiveEffect) {
   return function ownKeys(target: object): (string | number | symbol)[] {
     if (effect && !TRACK_LOCKED) {
-      track(target, OperationTypes.HAS, effect);
+      track(target, TrackOpTypes.HAS, effect);
     }
     return Reflect.ownKeys(target);
   };
@@ -55,7 +50,7 @@ function lockDeleteProperty(_target: object, key: string | symbol): boolean {
   throw new Error(`Cannot deleteProperty: ${String(key)} of hux state except in reducer.`);
 }
 
-export function createReactiveProxyHandles(): ProxyHandler<object> {
+export function createMutableHandles(): ProxyHandler<object> {
   return {
     get,
     set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
@@ -70,9 +65,9 @@ export function createReactiveProxyHandles(): ProxyHandler<object> {
 
       if (target === toRaw(receiver)) {
         if (hadKey) {
-          trigger(target, OperationTypes.SET, key);
+          trigger(target, TriggerOpTypes.SET, key);
         } else {
-          trigger(target, OperationTypes.ADD, key);
+          trigger(target, TriggerOpTypes.ADD, key);
         }
       }
       return result;
@@ -84,7 +79,7 @@ export function createReactiveProxyHandles(): ProxyHandler<object> {
       const hadKey = hasOwn(target, key);
       const result = Reflect.deleteProperty(target, key);
       if (result && hadKey) {
-        trigger(target, OperationTypes.DELETE, key);
+        trigger(target, TriggerOpTypes.DELETE, key);
       }
       return result;
     },
@@ -93,7 +88,7 @@ export function createReactiveProxyHandles(): ProxyHandler<object> {
   };
 }
 
-export function createTrackProxyHandles(effect: ReactiveEffect): ProxyHandler<object> {
+export function createTrackHandles(effect: ReactiveEffect): ProxyHandler<object> {
   return {
     get: createGetter(effect),
     set: lockSetter,

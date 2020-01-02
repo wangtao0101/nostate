@@ -15,3 +15,7 @@ export const toTypeString = (value: unknown): string => objectToString.call(valu
 export function toRawType(value: unknown): string {
   return toTypeString(value).slice(8, -1);
 }
+
+// compare whether a value has changed, accounting for NaN.
+export const hasChanged = (value: any, oldValue: any): boolean =>
+  value !== oldValue && (value === value || oldValue === oldValue);
