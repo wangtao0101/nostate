@@ -1,15 +1,22 @@
-import { hasOwn } from '../utils';
-import { track, trigger, ReactiveEffect } from './effect';
+import { hasOwn, isSymbol, hasChanged } from '../utils';
+import { track, trigger, ReactiveEffect, ITERATE_KEY } from './effect';
 import { toRaw, toReactive } from './reactive';
-import { TRACK_LOCKED, VALUE_LOCKED } from './lock';
+import { VALUE_LOCKED } from './lock';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
+
+const builtInSymbols = new Set(
+  Object.getOwnPropertyNames(Symbol)
+    .map(key => (Symbol as any)[key])
+    .filter(isSymbol),
+);
 
 function createGetter(effect?: ReactiveEffect) {
   return function get(target: object, key: string | symbol, receiver: object): any {
     const res = Reflect.get(target, key, receiver);
-    if (effect || !TRACK_LOCKED) {
-      track(target, TrackOpTypes.GET, effect, key);
+    if (isSymbol(key) && builtInSymbols.has(key)) {
+      return res;
     }
+    track(target, TrackOpTypes.GET, effect, key);
     return toReactive(res, effect);
   };
 }
@@ -17,18 +24,14 @@ function createGetter(effect?: ReactiveEffect) {
 function createHas(effect?: ReactiveEffect) {
   return function has(target: object, key: string | symbol): boolean {
     const result = Reflect.has(target, key);
-    if (effect && !TRACK_LOCKED) {
-      track(target, TrackOpTypes.HAS, effect, key);
-    }
+    track(target, TrackOpTypes.HAS, effect, key);
     return result;
   };
 }
 
 function createOwnKeys(effect?: ReactiveEffect) {
   return function ownKeys(target: object): (string | number | symbol)[] {
-    if (effect && !TRACK_LOCKED) {
-      track(target, TrackOpTypes.HAS, effect);
-    }
+    track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
     return Reflect.ownKeys(target);
   };
 }
@@ -59,15 +62,16 @@ function createMutableHandles(): ProxyHandler<object> {
       }
 
       const rawValue = toRaw(value);
+      const oldValue = (target as any)[key];
 
       const hadKey = hasOwn(target, key);
       const result = Reflect.set(target, key, rawValue, receiver);
 
       if (target === toRaw(receiver)) {
-        if (hadKey) {
-          trigger(target, TriggerOpTypes.SET, key);
-        } else {
+        if (!hadKey) {
           trigger(target, TriggerOpTypes.ADD, key);
+        } else if (hasChanged(value, oldValue)) {
+          trigger(target, TriggerOpTypes.SET, key);
         }
       }
       return result;

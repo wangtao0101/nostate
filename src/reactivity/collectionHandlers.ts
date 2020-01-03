@@ -1,7 +1,6 @@
 import { toRaw, toReactive } from './reactive';
 import { ReactiveEffect, track, ITERATE_KEY, trigger } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
-import { TRACK_LOCKED } from './lock';
 import { hasChanged } from '../utils';
 
 export type CollectionTypes = IterableCollections | WeakCollections;
@@ -30,9 +29,8 @@ function createGetter(effect?: ReactiveEffect) {
     target = toRaw(target);
     key = toRaw(key);
 
-    if (effect || !TRACK_LOCKED) {
-      track(target, TrackOpTypes.GET, effect, key);
-    }
+    track(target, TrackOpTypes.GET, effect, key);
+
     return toReactive(getProto(target).get.call(target, key), effect);
   };
 }
@@ -112,9 +110,8 @@ function createForEach(effect?: ReactiveEffect) {
     const observed = this;
     const target = toRaw(observed);
 
-    if (effect || !TRACK_LOCKED) {
-      track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
-    }
+    track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
+
     // important: create sure the callback is
     // 1. invoked with the reactive map as `this` and 3rd arg
     // 2. the value received should be a corresponding reactive/readonly.
