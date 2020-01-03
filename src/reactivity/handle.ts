@@ -50,7 +50,7 @@ function lockDeleteProperty(_target: object, key: string | symbol): boolean {
   throw new Error(`Cannot deleteProperty: ${String(key)} of hux state except in reducer.`);
 }
 
-export function createMutableHandles(): ProxyHandler<object> {
+function createMutableHandles(): ProxyHandler<object> {
   return {
     get,
     set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
@@ -87,6 +87,8 @@ export function createMutableHandles(): ProxyHandler<object> {
     ownKeys,
   };
 }
+
+export const mutableHandles = createMutableHandles();
 
 export function createTrackHandles(effect: ReactiveEffect): ProxyHandler<object> {
   return {

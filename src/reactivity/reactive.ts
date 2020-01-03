@@ -1,7 +1,8 @@
 import { isObject, toRawType } from '../utils';
-import { createTrackHandles, createMutableHandles } from './handle';
+import { createTrackHandles, mutableHandles } from './handle';
 import { ReactiveEffect, targetMap } from './effect';
 import { makeMap } from '../utils/makeMap';
+import { mutableCollectionHandles } from './collectionHandlers';
 
 const rawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const reactiveToRaw = new WeakMap<any, any>();
@@ -11,6 +12,7 @@ const trackReactiveToRaw = new WeakMap<any, any>();
 
 const EMPTY_EFFECT: ReactiveEffect = {} as any;
 
+const collectionTypes = new Set<Function>([Set, Map, WeakMap, WeakSet]);
 const isObservableType = /*#__PURE__*/ makeMap('Object,Array,Map,Set,WeakMap,WeakSet');
 
 const canObserve = (value: any): boolean => {
@@ -71,11 +73,12 @@ function createReactiveObject(
   }
 
   let handlers;
+  const isCollection = collectionTypes.has(target.constructor);
   if (effect) {
     handlers = createTrackHandles(effect);
+  } else {
+    handlers = isCollection ? mutableCollectionHandles : mutableHandles;
   }
-
-  handlers = createMutableHandles();
 
   observed = new Proxy(target, handlers);
 

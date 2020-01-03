@@ -144,7 +144,7 @@ const mutableInstrumentations: Record<string, Function | number> = {
   forEach: createForEach(),
 };
 
-export function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
+function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
   return {
     get: (target: CollectionTypes, key: string | symbol, receiver: CollectionTypes): any =>
       Reflect.get(
@@ -154,3 +154,5 @@ export function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> 
       ),
   };
 }
+
+export const mutableCollectionHandles = createMutableCollectionHandles();
