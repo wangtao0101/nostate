@@ -4,24 +4,24 @@ module.exports = {
   env: {
     browser: false,
     es6: true,
-    node: true,
+    node: true
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: path.join(process.cwd(), 'tsconfig.json'),
     tsconfigRootDir: path.resolve(__dirname),
-    sourceType: 'module',
+    sourceType: 'module'
   },
   plugins: ['@typescript-eslint'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'prettier',
     'prettier/@typescript-eslint',
-    'prettier/standard',
+    'prettier/standard'
   ],
   rules: {
     indent: 'off',
-    '@typescript-eslint/indent': ['error', 2],
+    // '@typescript-eslint/indent': ['error', 2],
     '@typescript-eslint/member-ordering': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     'no-unused-vars': 'off',
@@ -31,10 +31,10 @@ module.exports = {
         vars: 'all',
         args: 'after-used',
         ignoreRestSiblings: false,
-        argsIgnorePattern: '^_',
-      },
+        argsIgnorePattern: '^_'
+      }
     ],
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-use-before-define': 'off',
-  },
+    '@typescript-eslint/no-use-before-define': 'off'
+  }
 };

@@ -8,18 +8,18 @@ export const ITERATE_KEY = Symbol('iterate');
 export enum ReactiveEffectType {
   COMPUTED,
   COMPONENT,
-  EFFECT,
+  EFFECT
 }
 
 export interface ReactiveEffectOptions {
   lazy?: boolean;
   scheduler?: (run: Function) => void;
+  type?: ReactiveEffectType;
 }
 
 export interface ReactiveEffect<T = any> {
   _isEffect: true;
   active: boolean;
-  type: ReactiveEffectType;
   deps: Array<Dep>;
   options: ReactiveEffectOptions;
 
@@ -40,7 +40,7 @@ export function isEffect(fn: any): fn is ReactiveEffect {
 
 export function effect<T = any>(
   fn: () => T,
-  options: ReactiveEffectOptions = EMPTY_OBJ,
+  options: ReactiveEffectOptions = EMPTY_OBJ
 ): ReactiveEffect<T> {
   if (isEffect(fn)) {
     fn = fn.raw;
@@ -54,7 +54,7 @@ export function effect<T = any>(
 
 function createReactiveEffect<T = any>(
   fn: () => T,
-  options: ReactiveEffectOptions,
+  options: ReactiveEffectOptions
 ): ReactiveEffect<T> {
   const effect = function reactiveEffect(...args: unknown[]): unknown {
     return run(effect, fn, args);
@@ -147,7 +147,7 @@ export function track(
   target: object,
   _type: TrackOpTypes,
   effect?: ReactiveEffect,
-  key?: unknown,
+  key?: unknown
 ): void {
   if (effect === undefined && TRACK_LOCKED) {
     return;
@@ -180,13 +180,13 @@ function addRunners(
   effects: Set<ReactiveEffect>,
   computedRunners: Set<ReactiveEffect>,
   componentRunners: Set<ReactiveEffect>,
-  sourcesToAdd: Set<ReactiveEffect> | undefined,
+  sourcesToAdd: Set<ReactiveEffect> | undefined
 ): void {
   if (sourcesToAdd !== void 0) {
     sourcesToAdd.forEach(source => {
-      if (source.type === ReactiveEffectType.COMPUTED) {
+      if (source.options.type === ReactiveEffectType.COMPUTED) {
         computedRunners.add(source);
-      } else if (source.type === ReactiveEffectType.COMPONENT) {
+      } else if (source.options.type === ReactiveEffectType.COMPONENT) {
         componentRunners.add(source);
       } else {
         effects.add(source);
