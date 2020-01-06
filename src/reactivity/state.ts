@@ -2,16 +2,16 @@ import { ReactiveEffectType, effect, ReactiveEffect } from './effect';
 import { NOOP } from '../utils';
 import { reactive } from './reactive';
 
-export interface ComponentRef<T = any> {
+export interface StateRef<T = any> {
   readonly effect: ReactiveEffect<T>;
   readonly value: T;
 }
 
-export function componentReactive<T>(target: T, scheduler: () => void): ComponentRef<T> {
+export function state<T>(target: T, scheduler: () => void): StateRef<T> {
   const runner = effect(NOOP, {
     lazy: true,
     // mark effect as component so that it gets priority during trigger
-    type: ReactiveEffectType.COMPONENT,
+    type: ReactiveEffectType.STATE,
     scheduler: () => {
       scheduler();
     }

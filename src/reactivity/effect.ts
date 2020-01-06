@@ -7,7 +7,7 @@ export const ITERATE_KEY = Symbol('iterate');
 
 export enum ReactiveEffectType {
   COMPUTED,
-  COMPONENT,
+  STATE,
   EFFECT
 }
 
@@ -110,22 +110,22 @@ export function trigger(target: object, type: TriggerOpTypes, key?: unknown): vo
 
   const effects = new Set<ReactiveEffect>();
   const computedRunners = new Set<ReactiveEffect>();
-  const componentRunners = new Set<ReactiveEffect>();
+  const stateRunners = new Set<ReactiveEffect>();
 
   if (type === TriggerOpTypes.CLEAR) {
     // collection being cleared, trigger all effects for target
     depsMap.forEach(dep => {
-      addRunners(effects, computedRunners, componentRunners, dep);
+      addRunners(effects, computedRunners, stateRunners, dep);
     });
   } else {
     // schedule runs for SET | ADD | DELETE
     if (key !== void 0) {
-      addRunners(effects, computedRunners, componentRunners, depsMap.get(key));
+      addRunners(effects, computedRunners, stateRunners, depsMap.get(key));
     }
     // also run for iteration key on ADD | DELETE
     if (type === TriggerOpTypes.ADD || type === TriggerOpTypes.DELETE) {
       const iterationKey = isArray(target) ? 'length' : ITERATE_KEY;
-      addRunners(effects, computedRunners, componentRunners, depsMap.get(iterationKey));
+      addRunners(effects, computedRunners, stateRunners, depsMap.get(iterationKey));
     }
   }
 
@@ -140,7 +140,7 @@ export function trigger(target: object, type: TriggerOpTypes, key?: unknown): vo
   // can be invalidated before any normal effects that depend on them are run.
   computedRunners.forEach(run);
   effects.forEach(run);
-  componentRunners.forEach(run);
+  stateRunners.forEach(run);
 }
 
 export function track(
@@ -179,15 +179,15 @@ export function track(
 function addRunners(
   effects: Set<ReactiveEffect>,
   computedRunners: Set<ReactiveEffect>,
-  componentRunners: Set<ReactiveEffect>,
+  stateRunners: Set<ReactiveEffect>,
   sourcesToAdd: Set<ReactiveEffect> | undefined
 ): void {
   if (sourcesToAdd !== void 0) {
     sourcesToAdd.forEach(source => {
       if (source.options.type === ReactiveEffectType.COMPUTED) {
         computedRunners.add(source);
-      } else if (source.options.type === ReactiveEffectType.COMPONENT) {
-        componentRunners.add(source);
+      } else if (source.options.type === ReactiveEffectType.STATE) {
+        stateRunners.add(source);
       } else {
         effects.add(source);
       }
