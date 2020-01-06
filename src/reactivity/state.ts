@@ -1,10 +1,11 @@
 import { ReactiveEffectType, effect, ReactiveEffect } from './effect';
 import { NOOP } from '../utils';
 import { reactive } from './reactive';
+import { Ref, UnwrapRef } from './ref';
 
-export interface StateRef<T = any> {
+export interface StateRef<T = any> extends Ref<T> {
   readonly effect: ReactiveEffect<T>;
-  readonly value: T;
+  readonly value: UnwrapRef<T>;
 }
 
 export function state<T>(target: T, scheduler: () => void): StateRef<T> {

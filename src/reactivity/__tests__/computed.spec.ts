@@ -1,4 +1,4 @@
-import { computed } from '../compute';
+import { computed } from '../computed';
 import { reactive } from '../reactive';
 import { effect, stop } from '../effect';
 import { mockWarn } from '../../test-utils/mockWarn';
