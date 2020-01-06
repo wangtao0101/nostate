@@ -10,7 +10,7 @@ export interface StateRef<T = any> {
 export function state<T>(target: T, scheduler: () => void): StateRef<T> {
   const runner = effect(NOOP, {
     lazy: true,
-    // mark effect as state so that it gets priority during trigger
+    // mark effect as state so that it gets low priority during trigger
     type: ReactiveEffectType.STATE,
     scheduler: () => {
       scheduler();
