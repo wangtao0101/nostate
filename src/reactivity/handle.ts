@@ -7,7 +7,7 @@ import { TrackOpTypes, TriggerOpTypes } from './operations';
 const builtInSymbols = new Set(
   Object.getOwnPropertyNames(Symbol)
     .map(key => (Symbol as any)[key])
-    .filter(isSymbol),
+    .filter(isSymbol)
 );
 
 function createGetter(effect?: ReactiveEffect) {
@@ -16,7 +16,7 @@ function createGetter(effect?: ReactiveEffect) {
     if (isSymbol(key) && builtInSymbols.has(key)) {
       return res;
     }
-    track(target, TrackOpTypes.GET, effect, key);
+    track(target, TrackOpTypes.GET, key, effect);
     return toReactive(res, effect);
   };
 }
@@ -24,14 +24,14 @@ function createGetter(effect?: ReactiveEffect) {
 function createHas(effect?: ReactiveEffect) {
   return function has(target: object, key: string | symbol): boolean {
     const result = Reflect.has(target, key);
-    track(target, TrackOpTypes.HAS, effect, key);
+    track(target, TrackOpTypes.HAS, key, effect);
     return result;
   };
 }
 
 function createOwnKeys(effect?: ReactiveEffect) {
   return function ownKeys(target: object): (string | number | symbol)[] {
-    track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
+    track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
     return Reflect.ownKeys(target);
   };
 }
@@ -44,13 +44,13 @@ function lockSetter(
   _target: object,
   key: string | symbol,
   _value: unknown,
-  _receiver: object,
+  _receiver: object
 ): boolean {
   throw new Error(`Cannot set key: ${String(key)} of hux state except in reducer.`);
 }
 
 function lockDeleteProperty(_target: object, key: string | symbol): boolean {
-  throw new Error(`Cannot deleteProperty: ${String(key)} of hux state except in reducer.`);
+  throw new Error(`Cannot delete key: ${String(key)} of hux state except in reducer.`);
 }
 
 function createMutableHandles(): ProxyHandler<object> {
@@ -88,7 +88,7 @@ function createMutableHandles(): ProxyHandler<object> {
       return result;
     },
     has,
-    ownKeys,
+    ownKeys
   };
 }
 
@@ -100,6 +100,6 @@ export function createTrackHandles(effect: ReactiveEffect): ProxyHandler<object>
     set: lockSetter,
     deleteProperty: lockDeleteProperty,
     has: createHas(effect),
-    ownKeys: createOwnKeys(effect),
+    ownKeys: createOwnKeys(effect)
   };
 }

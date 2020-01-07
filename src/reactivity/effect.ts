@@ -146,8 +146,8 @@ export function trigger(target: object, type: TriggerOpTypes, key?: unknown): vo
 export function track(
   target: object,
   _type: TrackOpTypes,
-  effect?: ReactiveEffect,
-  key?: unknown
+  key: unknown,
+  effect?: ReactiveEffect
 ): void {
   if (effect === undefined && TRACK_LOCKED) {
     return;

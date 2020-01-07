@@ -21,7 +21,7 @@ const collectionMethods: Array<string | symbol> = ([
   'set',
   'delete',
   'clear',
-  'forEach',
+  'forEach'
 ] as Array<string | symbol>).concat(...iteratorMethods);
 
 function createGetter(effect?: ReactiveEffect) {
@@ -29,7 +29,7 @@ function createGetter(effect?: ReactiveEffect) {
     target = toRaw(target);
     key = toRaw(key);
 
-    track(target, TrackOpTypes.GET, effect, key);
+    track(target, TrackOpTypes.GET, key, effect);
 
     return toReactive(getProto(target).get.call(target, key), effect);
   };
@@ -39,7 +39,7 @@ function createHas(effect?: ReactiveEffect) {
   return function has(this: CollectionTypes, key: unknown): boolean {
     const target = toRaw(this);
     key = toRaw(key);
-    track(target, TrackOpTypes.HAS, effect, key);
+    track(target, TrackOpTypes.HAS, key, effect);
     return getProto(target).has.call(target, key);
   };
 }
@@ -47,7 +47,7 @@ function createHas(effect?: ReactiveEffect) {
 function createSize(effect?: ReactiveEffect): (target: IterableCollections) => number {
   return function size(target: IterableCollections): number {
     target = toRaw(target);
-    track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
+    track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
     return Reflect.get(getProto(target), 'size', target);
   };
 }
@@ -110,7 +110,7 @@ function createForEach(effect?: ReactiveEffect) {
     const observed = this;
     const target = toRaw(observed);
 
-    track(target, TrackOpTypes.ITERATE, effect, ITERATE_KEY);
+    track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
 
     // important: create sure the callback is
     // 1. invoked with the reactive map as `this` and 3rd arg
@@ -138,7 +138,7 @@ const mutableInstrumentations: Record<string, Function | number> = {
   set,
   delete: deleteEntry,
   clear,
-  forEach: createForEach(),
+  forEach: createForEach()
 };
 
 function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
@@ -147,8 +147,8 @@ function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
       Reflect.get(
         collectionMethods.includes(key) && key in target ? mutableInstrumentations : target,
         key,
-        receiver,
-      ),
+        receiver
+      )
   };
 }
 
