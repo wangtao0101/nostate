@@ -1,5 +1,5 @@
 import { unlockValue, lockValue } from '../lock';
-import { state } from '../state';
+import { reactiveTrace } from '../traceRef';
 import { reactive } from '../reactive';
 import { stop } from '../effect';
 
@@ -18,7 +18,7 @@ describe('reactivity/state', () => {
 
     const fnSpy = jest.fn(() => {});
 
-    const componentState = state(original, fnSpy);
+    const componentState = reactiveTrace(original, fnSpy);
 
     expect(componentState.value.foo).toBe(1);
     observed.foo++;
@@ -32,7 +32,7 @@ describe('reactivity/state', () => {
 
     const fnSpy = jest.fn(() => {});
 
-    const componentState = state(original, fnSpy);
+    const componentState = reactiveTrace(original, fnSpy);
 
     expect(() => {
       delete componentState.value.foo;
@@ -49,7 +49,7 @@ describe('reactivity/state', () => {
 
     const fnSpy = jest.fn(() => {});
 
-    const componentState = state(original, fnSpy);
+    const componentState = reactiveTrace(original, fnSpy);
 
     expect(componentState.value.foo).toBe(1);
     observed.foo++;

@@ -7,8 +7,8 @@ export const ITERATE_KEY = Symbol('iterate');
 
 export enum ReactiveEffectType {
   COMPUTED,
-  STATE,
-  EFFECT
+  EFFECT,
+  TRACE
 }
 
 export interface ReactiveEffectOptions {
@@ -186,7 +186,7 @@ function addRunners(
     sourcesToAdd.forEach(source => {
       if (source.options.type === ReactiveEffectType.COMPUTED) {
         computedRunners.add(source);
-      } else if (source.options.type === ReactiveEffectType.STATE) {
+      } else if (source.options.type === ReactiveEffectType.TRACE) {
         stateRunners.add(source);
       } else {
         effects.add(source);
