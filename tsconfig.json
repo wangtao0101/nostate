@@ -20,5 +20,5 @@
     "types": ["jest", "node"],
     "rootDir": "."
   },
-  "include": ["src/**/*.ts", "src/*.ts", "jest.config.js", "scripts/*.js"]
+  "include": ["src/**/*.ts", "src/*.ts", "jest.config.js", "scripts/*.js", "src/core/__tests__/component.spec.tsx"]
 }

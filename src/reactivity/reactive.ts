@@ -19,10 +19,10 @@ const canObserve = (value: any): boolean => {
   return isObservableType(toRawType(value));
 };
 
-export function getProxy<T>(
+function getProxy<T>(
   target: T,
   toProxy: WeakMap<any, WeakMap<any, any>>,
-  effect: ReactiveEffect = EMPTY_EFFECT,
+  effect: ReactiveEffect = EMPTY_EFFECT
 ): any {
   const sourceTargetMap = toProxy.get(target);
   if (sourceTargetMap == null) {
@@ -31,11 +31,11 @@ export function getProxy<T>(
   return sourceTargetMap.get(effect);
 }
 
-export function setProxy(
+function setProxy(
   target: any,
   proxy: any,
   toProxy: WeakMap<any, WeakMap<any, any>>,
-  effect: ReactiveEffect = EMPTY_EFFECT,
+  effect: ReactiveEffect = EMPTY_EFFECT
 ): void {
   let sourceTargetMap = toProxy.get(target);
   if (sourceTargetMap == null) {
@@ -49,7 +49,7 @@ function createReactiveObject(
   target: unknown,
   toProxy: WeakMap<any, WeakMap<any, any>>,
   toRaw: WeakMap<any, any>,
-  effect?: ReactiveEffect,
+  effect?: ReactiveEffect
 ): any {
   if (!isObject(target)) {
     if (__DEV__) {

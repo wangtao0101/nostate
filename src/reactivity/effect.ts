@@ -1,7 +1,6 @@
 import { isArray } from 'util';
 import { EMPTY_OBJ } from '../utils';
 import { TriggerOpTypes, TrackOpTypes } from './operations';
-import { TRACK_LOCKED } from './lock';
 
 export const ITERATE_KEY = Symbol('iterate');
 
@@ -149,10 +148,6 @@ export function track(
   key: unknown,
   effect?: ReactiveEffect
 ): void {
-  if (effect === undefined && TRACK_LOCKED) {
-    return;
-  }
-
   if (effect === undefined && activeEffect === undefined) {
     return;
   }

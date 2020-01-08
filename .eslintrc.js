@@ -14,6 +14,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   extends: [
+    'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'prettier',
     'prettier/@typescript-eslint',
@@ -35,6 +36,7 @@ module.exports = {
       }
     ],
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-use-before-define': 'off'
+    '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off'
   }
 };
