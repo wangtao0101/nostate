@@ -9,8 +9,6 @@ export interface TraceRef<T = any> extends Ref<T> {
   readonly value: UnwrapRef<T>;
 }
 
-// export function createTraceEffect
-
 export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> {
   const runner = effect(NOOP, {
     lazy: true,
