@@ -6,14 +6,6 @@ import { reducer } from '../reducer';
 import { reactive, computed } from '../../reactivity';
 
 describe('core/component', () => {
-  it('should test react component success', () => {
-    const Text = ({ text }: { text: string }) => <span>{text}</span>;
-
-    const { queryByText } = render(<Text text={'text'} />);
-
-    expect(queryByText('text')).not.toBeNull();
-  });
-
   it('should rerender when change reactive value', () => {
     const Example = () => {
       const { observed, increase } = useHux(() => {
@@ -29,6 +21,33 @@ describe('core/component', () => {
       return (
         <div data-testid="id" onClick={() => increase()}>
           {observed.foo}
+        </div>
+      );
+    };
+
+    const { getByTestId, queryByText } = render(<Example />);
+    expect(queryByText('1')).not.toBeNull();
+
+    const node = getByTestId('id');
+    fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
+    expect(queryByText('2')).not.toBeNull();
+  });
+
+  it('should rerender when passed nest observed value', () => {
+    const Example = () => {
+      const { observed, increase } = useHux(() => {
+        const observed = reactive({ foo: { bar: 1 } });
+        return {
+          observed: observed.foo,
+          increase: reducer(() => {
+            observed.foo.bar += 1;
+          })
+        };
+      }, {});
+
+      return (
+        <div data-testid="id" onClick={() => increase()}>
+          {observed.bar}
         </div>
       );
     };
