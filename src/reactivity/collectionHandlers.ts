@@ -66,6 +66,7 @@ function add(this: SetTypes, value: unknown): any {
 
 function set(this: MapTypes, key: unknown, value: unknown): void {
   value = toRaw(value);
+  key = toRaw(key);
   const target = toRaw(this);
   const proto = getProto(target);
   const hadKey = proto.has.call(target, key);
@@ -82,6 +83,7 @@ function set(this: MapTypes, key: unknown, value: unknown): void {
 }
 
 function deleteEntry(this: CollectionTypes, key: unknown): void {
+  key = toRaw(key);
   const target = toRaw(this);
   const proto = getProto(target);
   const hadKey = proto.has.call(target, key);
