@@ -8,11 +8,6 @@ describe('reactivity/collections', () => {
       expect(() => {
         observed.set('foo', 1);
       }).toThrowError(/Cannot set key: foo of hux state except in reducer./);
-
-      const observed1 = reactive(new Set());
-      expect(() => {
-        observed1.add(1);
-      }).toThrowError(/Cannot add value: 1 of hux state except in reducer./);
     });
   });
 
