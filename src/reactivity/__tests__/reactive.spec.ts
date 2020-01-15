@@ -40,11 +40,11 @@ describe('reactivity/reactive', () => {
 
     expect(() => {
       observed.bar = 1;
-    }).toThrowError(/Cannot set key: bar of hux state except in reducer./);
+    }).toThrowError(/Cannot set key: bar, hux state is readonly except in reducer./);
 
     expect(() => {
       delete observed.foo;
-    }).toThrowError(/Cannot delete key: foo of hux state except in reducer./);
+    }).toThrowError(/Cannot delete key: foo, hux state is readonly except in reducer./);
   });
 
   test('cloned reactive Array should point to observed values', () => {
@@ -59,9 +59,9 @@ describe('reactivity/reactive', () => {
   test('nested reactives', () => {
     const original = {
       nested: {
-        foo: 1,
+        foo: 1
       },
-      array: [{ bar: 2 }],
+      array: [{ bar: 2 }]
     };
     const observed = reactive(original);
     expect(isReactive(observed.nested)).toBe(true);

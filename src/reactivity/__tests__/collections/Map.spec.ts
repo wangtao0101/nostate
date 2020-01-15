@@ -7,7 +7,7 @@ describe('reactivity/collections', () => {
       const observed = reactive(new Map());
       expect(() => {
         observed.set('foo', 1);
-      }).toThrowError(/Cannot set key: foo of hux state except in reducer./);
+      }).toThrowError(/Cannot set key: foo, hux state is readonly except in reducer./);
     });
   });
 

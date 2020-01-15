@@ -1,7 +1,7 @@
 import { toRaw, toReactive } from './reactive';
 import { ReactiveEffect, track, ITERATE_KEY, trigger } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
-import { hasChanged } from '../utils';
+import { hasChanged, capitalize } from '../utils';
 import { VALUE_LOCKED } from './lock';
 
 export type CollectionTypes = IterableCollections | WeakCollections;
@@ -55,7 +55,7 @@ function createSize(effect?: ReactiveEffect): (target: IterableCollections) => n
 
 function add(this: SetTypes, value: unknown): any {
   if (VALUE_LOCKED) {
-    throw new Error(`Cannot add value: ${String(value)} of hux state except in reducer.`);
+    throw new Error(`Cannot add value: ${String(value)}, hux state is readonly except in reducer.`);
   }
   value = toRaw(value);
   const target = toRaw(this);
@@ -70,7 +70,7 @@ function add(this: SetTypes, value: unknown): any {
 
 function set(this: MapTypes, key: unknown, value: unknown): void {
   if (VALUE_LOCKED) {
-    throw new Error(`Cannot set key: ${String(key)} of hux state except in reducer.`);
+    throw new Error(`Cannot set key: ${String(key)}, hux state is readonly except in reducer.`);
   }
 
   value = toRaw(value);
@@ -185,15 +185,54 @@ iteratorMethods.forEach(method => {
   mutableInstrumentations[method as string] = createIterableMethod(method);
 });
 
-function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
+function createReadonlyMethod(method: Function, type: TriggerOpTypes): Function {
+  return function(this: CollectionTypes, ...args: unknown[]) {
+    const key = args[0] ? `on key "${args[0]}" ` : ``;
+    throw new Error(
+      `${capitalize(type)} operation ${key} failed: hux state is readonly except in reducer.`
+    );
+  };
+}
+
+const readonlyMethod = {
+  add: createReadonlyMethod(add, TriggerOpTypes.ADD),
+  set: createReadonlyMethod(set, TriggerOpTypes.SET),
+  delete: createReadonlyMethod(deleteEntry, TriggerOpTypes.DELETE),
+  clear: createReadonlyMethod(clear, TriggerOpTypes.CLEAR)
+};
+
+function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<CollectionTypes> {
   return {
-    get: (target: CollectionTypes, key: string | symbol, receiver: CollectionTypes): any =>
-      Reflect.get(
-        collectionMethods.includes(key) && key in target ? mutableInstrumentations : target,
-        key,
-        receiver
-      )
+    get: (target: CollectionTypes, key: string | symbol, receiver: CollectionTypes): any => {
+      const isCollection = collectionMethods.includes(key) && key in target;
+      if (!effect) {
+        return Reflect.get(isCollection ? mutableInstrumentations : target, key, receiver);
+      }
+
+      const newGet = createGetter(effect);
+      const newForEach = createForEach(effect);
+
+      const readonlyInstrumentations: Record<string, Function | number> = {
+        get(this: MapTypes, key: unknown) {
+          return newGet(this, key);
+        },
+        get size(this: IterableCollections) {
+          return size(this);
+        },
+        has,
+        forEach: newForEach,
+        ...readonlyMethod
+      };
+
+      return Reflect.get(isCollection ? readonlyInstrumentations : target, key, receiver);
+    }
   };
 }
 
 export const mutableCollectionHandles = createMutableCollectionHandles();
+
+export function createTrackCollectionHandles(
+  effect: ReactiveEffect
+): ProxyHandler<CollectionTypes> {
+  return createMutableCollectionHandles(effect);
+}

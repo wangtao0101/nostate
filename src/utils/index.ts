@@ -23,3 +23,15 @@ export function toRawType(value: unknown): string {
 // compare whether a value has changed, accounting for NaN.
 export const hasChanged = (value: any, oldValue: any): boolean =>
   value !== oldValue && (value === value || oldValue === oldValue);
+
+function cacheStringFunction<T extends (str: string) => string>(fn: T): T {
+  const cache: Record<string, string> = Object.create(null);
+  return ((str: string) => {
+    const hit = cache[str];
+    return hit || (cache[str] = fn(str));
+  }) as any;
+}
+
+export const capitalize = cacheStringFunction((str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+});
