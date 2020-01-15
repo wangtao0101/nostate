@@ -2,6 +2,7 @@ import { toRaw, toReactive } from './reactive';
 import { ReactiveEffect, track, ITERATE_KEY, trigger } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
 import { hasChanged } from '../utils';
+import { VALUE_LOCKED } from './lock';
 
 export type CollectionTypes = IterableCollections | WeakCollections;
 
@@ -53,6 +54,9 @@ function createSize(effect?: ReactiveEffect): (target: IterableCollections) => n
 }
 
 function add(this: SetTypes, value: unknown): any {
+  if (VALUE_LOCKED) {
+    throw new Error(`Cannot add value: ${String(value)} of hux state except in reducer.`);
+  }
   value = toRaw(value);
   const target = toRaw(this);
   const proto = getProto(target);
@@ -65,6 +69,10 @@ function add(this: SetTypes, value: unknown): any {
 }
 
 function set(this: MapTypes, key: unknown, value: unknown): void {
+  if (VALUE_LOCKED) {
+    throw new Error(`Cannot set key: ${String(key)} of hux state except in reducer.`);
+  }
+
   value = toRaw(value);
   key = toRaw(key);
   const target = toRaw(this);
@@ -83,6 +91,9 @@ function set(this: MapTypes, key: unknown, value: unknown): void {
 }
 
 function deleteEntry(this: CollectionTypes, key: unknown): void {
+  if (VALUE_LOCKED) {
+    throw new Error(`Cannot delete key: ${String(key)} of hux state except in reducer.`);
+  }
   key = toRaw(key);
   const target = toRaw(this);
   const proto = getProto(target);

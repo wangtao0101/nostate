@@ -3,6 +3,20 @@ import { unlockValue, lockValue } from '../../lock';
 
 describe('reactivity/collections', () => {
   describe('Map', () => {
+    test('should not set or delete value if object locked', () => {
+      const observed = reactive(new Map());
+      expect(() => {
+        observed.set('foo', 1);
+      }).toThrowError(/Cannot set key: foo of hux state except in reducer./);
+
+      const observed1 = reactive(new Set());
+      expect(() => {
+        observed1.add(1);
+      }).toThrowError(/Cannot add value: 1 of hux state except in reducer./);
+    });
+  });
+
+  describe('Map', () => {
     beforeAll(() => {
       unlockValue();
     });
