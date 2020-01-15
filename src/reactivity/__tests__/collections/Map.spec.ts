@@ -1,7 +1,16 @@
 import { reactive, effect, toRaw, isReactive } from '../../index';
+import { unlockValue, lockValue } from '../../lock';
 
 describe('reactivity/collections', () => {
   describe('Map', () => {
+    beforeAll(() => {
+      unlockValue();
+    });
+
+    afterAll(() => {
+      lockValue();
+    });
+
     test('instanceof', () => {
       const original = new Map();
       const observed = reactive(original);

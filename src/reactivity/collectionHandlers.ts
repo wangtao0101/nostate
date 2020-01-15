@@ -124,6 +124,33 @@ function createForEach(effect?: ReactiveEffect) {
   };
 }
 
+function createIterableMethod(method: string | symbol) {
+  return function(this: IterableCollections, ...args: unknown[]) {
+    const target = toRaw(this);
+    const isPair = method === 'entries' || (method === Symbol.iterator && target instanceof Map);
+    const innerIterator = getProto(target)[method].apply(target, args);
+    track(target, TrackOpTypes.ITERATE, ITERATE_KEY);
+    // return a wrapped iterator which returns observed versions of the
+    // values emitted from the real iterator
+    return {
+      // iterator protocol
+      next() {
+        const { value, done } = innerIterator.next();
+        return done
+          ? { value, done }
+          : {
+              value: isPair ? [toReactive(value[0]), toReactive(value[1])] : toReactive(value),
+              done
+            };
+      },
+      // iterable protocol
+      [Symbol.iterator]() {
+        return this;
+      }
+    };
+  };
+}
+
 const get = createGetter();
 const has = createHas();
 const size = createSize();
@@ -142,6 +169,10 @@ const mutableInstrumentations: Record<string, Function | number> = {
   clear,
   forEach: createForEach()
 };
+
+iteratorMethods.forEach(method => {
+  mutableInstrumentations[method as string] = createIterableMethod(method);
+});
 
 function createMutableCollectionHandles(): ProxyHandler<CollectionTypes> {
   return {
