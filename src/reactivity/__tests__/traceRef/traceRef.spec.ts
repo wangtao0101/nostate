@@ -1,8 +1,8 @@
-import { unlockValue, lockValue } from '../lock';
-import { reactiveTrace, computedTrace } from '../traceRef';
-import { reactive } from '../reactive';
-import { stop } from '../effect';
-import { computed } from '../computed';
+import { unlockValue, lockValue } from '../../lock';
+import { reactiveTrace, computedTrace } from '../../traceRef';
+import { reactive } from '../../reactive';
+import { stop } from '../../effect';
+import { computed } from '../../computed';
 
 describe('reactivity/traceRef', () => {
   beforeAll(() => {

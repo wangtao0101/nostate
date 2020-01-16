@@ -2,7 +2,7 @@ import { isObject, toRawType } from '../utils';
 import { createTrackHandles, mutableHandles } from './handle';
 import { ReactiveEffect, targetMap } from './effect';
 import { makeMap } from '../utils/makeMap';
-import { mutableCollectionHandles } from './collectionHandlers';
+import { mutableCollectionHandles, createTrackCollectionHandles } from './collectionHandlers';
 
 const rawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const reactiveToRaw = new WeakMap<any, any>();
@@ -75,7 +75,7 @@ function createReactiveObject(
   let handlers;
   const isCollection = collectionTypes.has(target.constructor);
   if (effect) {
-    handlers = createTrackHandles(effect);
+    handlers = isCollection ? createTrackCollectionHandles(effect) : createTrackHandles(effect);
   } else {
     handlers = isCollection ? mutableCollectionHandles : mutableHandles;
   }
