@@ -22,7 +22,7 @@ export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> 
   const value = reactive(target, runner);
 
   return {
-    _isRef: true,
+    _isTraceRef: true,
     // expose effect so trace ref can be stopped
     effect: runner,
     value
@@ -40,7 +40,7 @@ export function computedTrace<T>(computedRef: ComputedRef, scheduler: () => void
   });
 
   return {
-    _isRef: true,
+    _isTraceRef: true,
     // expose effect so trace ref can be stopped
     effect: runner,
     get value() {

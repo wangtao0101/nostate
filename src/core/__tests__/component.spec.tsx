@@ -119,4 +119,35 @@ describe('core/component', () => {
 
     expect(fn).toHaveBeenCalledTimes(2);
   });
+
+  it('should trigger render bothparent and child if pass reactive to child when value changed', () => {
+    const Child = ({ observed, increase }: any) => {
+      return (
+        <div data-testid="id" onClick={() => increase()}>
+          {observed.foo}
+        </div>
+      );
+    };
+
+    const Parent = () => {
+      const { observed, increase } = useHux(() => {
+        const observed = reactive({ foo: 1 });
+        return {
+          observed,
+          increase: reducer(() => {
+            observed.foo += 1;
+          })
+        };
+      }, {});
+
+      return <Child observed={observed} increase={increase} />;
+    };
+
+    const { getByTestId, queryByText } = render(<Parent />);
+    expect(queryByText('1')).not.toBeNull();
+
+    const node = getByTestId('id');
+    fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
+    expect(queryByText('2')).not.toBeNull();
+  });
 });
