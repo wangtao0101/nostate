@@ -37,11 +37,13 @@ describe('reactivity/traceRef', () => {
 
     expect(() => {
       delete traceRef.value.foo;
-    }).toThrowError(/Cannot delete key: foo, hux state is readonly except in reducer./);
+    }).toThrowError(
+      /Cannot delete key: foo, hux state is readonly except in coresponding reducer./
+    );
 
     expect(() => {
       traceRef.value.foo = 2;
-    }).toThrowError(/Cannot set key: foo, hux state is readonly except in reducer./);
+    }).toThrowError(/Cannot set key: foo, hux state is readonly except in coresponding reducer./);
   });
 
   it('should no longer call scheduler when reactive trace effect stopped', () => {

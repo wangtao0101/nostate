@@ -55,7 +55,9 @@ function createSize(effect?: ReactiveEffect): (target: IterableCollections) => n
 
 function add(this: SetTypes, value: unknown): any {
   if (VALUE_LOCKED) {
-    throw new Error(`Cannot add value: ${String(value)}, hux state is readonly except in reducer.`);
+    throw new Error(
+      `Cannot add value: ${String(value)}, hux state is readonly except in coresponding reducer.`
+    );
   }
   value = toRaw(value);
   const target = toRaw(this);
@@ -70,7 +72,9 @@ function add(this: SetTypes, value: unknown): any {
 
 function set(this: MapTypes, key: unknown, value: unknown): void {
   if (VALUE_LOCKED) {
-    throw new Error(`Cannot set key: ${String(key)}, hux state is readonly except in reducer.`);
+    throw new Error(
+      `Cannot set key: ${String(key)}, hux state is readonly except in coresponding reducer.`
+    );
   }
 
   value = toRaw(value);
@@ -191,7 +195,9 @@ function createReadonlyMethod(method: Function, type: TriggerOpTypes): Function 
   return function(this: CollectionTypes, ...args: unknown[]) {
     const key = args[0] ? `on key "${args[0]}" ` : ``;
     throw new Error(
-      `${capitalize(type)} operation ${key} failed: hux state is readonly except in reducer.`
+      `${capitalize(
+        type
+      )} operation ${key} failed: hux state is readonly except in coresponding reducer.`
     );
   };
 }

@@ -46,11 +46,15 @@ function lockSetter(
   _value: unknown,
   _receiver: object
 ): boolean {
-  throw new Error(`Cannot set key: ${String(key)}, hux state is readonly except in reducer.`);
+  throw new Error(
+    `Cannot set key: ${String(key)}, hux state is readonly except in coresponding reducer.`
+  );
 }
 
 function lockDeleteProperty(_target: object, key: string | symbol): boolean {
-  throw new Error(`Cannot delete key: ${String(key)}, hux state is readonly except in reducer.`);
+  throw new Error(
+    `Cannot delete key: ${String(key)}, hux state is readonly except in coresponding reducer.`
+  );
 }
 
 function createMutableHandles(): ProxyHandler<object> {
@@ -58,7 +62,9 @@ function createMutableHandles(): ProxyHandler<object> {
     get,
     set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
       if (VALUE_LOCKED) {
-        throw new Error(`Cannot set key: ${String(key)}, hux state is readonly except in reducer.`);
+        throw new Error(
+          `Cannot set key: ${String(key)}, hux state is readonly except in coresponding reducer.`
+        );
       }
 
       const rawValue = toRaw(value);
@@ -79,7 +85,7 @@ function createMutableHandles(): ProxyHandler<object> {
     deleteProperty: (target: object, key: string | symbol): boolean => {
       if (VALUE_LOCKED) {
         throw new Error(
-          `Cannot delete key: ${String(key)}, hux state is readonly except in reducer.`
+          `Cannot delete key: ${String(key)}, hux state is readonly except in coresponding reducer.`
         );
       }
       const hadKey = hasOwn(target, key);
