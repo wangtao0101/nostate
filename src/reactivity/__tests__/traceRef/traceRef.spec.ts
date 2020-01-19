@@ -104,4 +104,24 @@ describe('reactivity/traceRef', () => {
 
     expect(fnSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('should trigger and forbid modify on reactive value based on trace reactive value ', () => {
+    const original = { foo: 1 };
+    const observed = reactive(original);
+
+    const fnSpy = jest.fn(() => {});
+
+    const traceRef = reactiveTrace(original, fnSpy);
+
+    const observed1 = reactive(traceRef.value);
+
+    expect(observed1.foo).toBe(1);
+
+    observed.foo++;
+    expect(fnSpy).toHaveBeenCalledTimes(1);
+
+    expect(() => {
+      observed1.foo = 2;
+    }).toThrowError(/Cannot set key: foo, hux state is readonly except in coresponding reducer./);
+  });
 });
