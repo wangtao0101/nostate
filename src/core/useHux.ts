@@ -14,9 +14,9 @@ import {
 
 type WrapTanceRef<T> = { [P in keyof T]: T[P] extends Ref ? TraceRef<T[P]> : T[P] };
 
-export function useHux<RawBindings extends Record<string, any>, T extends Record<string, any>>(
-  setup: (args: T) => RawBindings,
-  initValue: T
+export function useHux<RawBindings extends Record<string, any>, T extends any[]>(
+  setup: (...args: T) => RawBindings,
+  ...args: T
 ): WrapTanceRef<RawBindings> {
   const [, forceRender] = useReducer(s => s + 1, 0);
 
@@ -28,7 +28,7 @@ export function useHux<RawBindings extends Record<string, any>, T extends Record
   }, []);
 
   useMemo(() => {
-    const binds = setup(initValue);
+    const binds = setup(...args);
 
     Object.keys(binds).map(bindKey => {
       const bind = binds[bindKey];

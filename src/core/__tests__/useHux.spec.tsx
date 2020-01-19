@@ -14,7 +14,7 @@ describe('core/useHux', () => {
             observed.foo += 1;
           })
         };
-      }, {})
+      })
     );
 
     const { observed, increase } = result.current;
@@ -40,7 +40,7 @@ describe('core/useHux', () => {
             observed.foo += 1;
           })
         };
-      }, {})
+      })
     );
 
     const { cValue, increase } = result.current;
@@ -54,7 +54,23 @@ describe('core/useHux', () => {
     expect(cValue.value).toBe(3);
   });
 
-  it('should pass init props', () => {
+  it('should pass number', () => {
+    const { result } = renderHook(() =>
+      useHux((a: number) => {
+        const observed = reactive({ foo: a });
+
+        return {
+          observed
+        };
+      }, 2)
+    );
+
+    const { observed } = result.current;
+
+    expect(observed.foo).toBe(2);
+  });
+
+  it('should pass object props', () => {
     const { result } = renderHook(() =>
       useHux(
         ({ a }: { a: number }) => {

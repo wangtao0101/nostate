@@ -16,7 +16,7 @@ describe('core/component', () => {
             observed.foo += 1;
           })
         };
-      }, {});
+      });
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -43,7 +43,7 @@ describe('core/component', () => {
             observed.foo.bar += 1;
           })
         };
-      }, {});
+      });
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -71,7 +71,7 @@ describe('core/component', () => {
             observed.foo += 1;
           })
         };
-      }, {});
+      });
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -101,7 +101,7 @@ describe('core/component', () => {
             observed.foo += 1;
           })
         };
-      }, {});
+      });
 
       fn();
 
@@ -138,7 +138,7 @@ describe('core/component', () => {
             observed.foo += 1;
           })
         };
-      }, {});
+      });
 
       return <Child observed={observed} increase={increase} />;
     };
