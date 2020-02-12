@@ -20,5 +20,12 @@
     "types": ["jest", "node"],
     "rootDir": "."
   },
-  "include": ["src/**/*.tsx", "src/**/*.ts", "src/*.ts", "jest.config.js", "scripts/*.js"]
+  "include": [
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "src/*.ts",
+    "jest.config.js",
+    "scripts/*.js",
+    "rollup.config.js"
+  ]
 }
