@@ -1,5 +1,4 @@
-import { isArray } from 'util';
-import { EMPTY_OBJ } from '../utils';
+import { EMPTY_OBJ, isArray } from '../utils';
 import { TriggerOpTypes, TrackOpTypes } from './operations';
 
 export const ITERATE_KEY = Symbol('iterate');

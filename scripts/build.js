@@ -1,11 +1,14 @@
 const path = require('path');
 const fs = require('fs-extra');
 const chalk = require('chalk');
+const execa = require('execa');
 const { Extractor, ExtractorConfig } = require('@microsoft/api-extractor');
 
 run();
 
 async function run() {
+  await execa('rollup', ['-c'], { stdio: 'inherit' });
+
   const extractorConfigPath = path.resolve(process.cwd(), `api-extractor.json`);
   const extractorConfig = ExtractorConfig.loadFileAndPrepare(extractorConfigPath);
   const result = Extractor.invoke(extractorConfig, {
