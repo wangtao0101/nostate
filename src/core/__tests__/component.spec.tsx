@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useHux } from '../useHux';
+import { useHookux } from '../useHookux';
 import { reducer } from '../reducer';
 import { reactive, computed } from '../../reactivity';
 
 describe('core/component', () => {
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { observed, increase } = useHux(() => {
+      const { observed, increase } = useHookux(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -35,7 +35,7 @@ describe('core/component', () => {
 
   it('should rerender when passed nest observed value', () => {
     const Example = () => {
-      const { observed, increase } = useHux(() => {
+      const { observed, increase } = useHookux(() => {
         const observed = reactive({ foo: { bar: 1 } });
         return {
           observed: observed.foo,
@@ -62,7 +62,7 @@ describe('core/component', () => {
 
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { cValue, increase } = useHux(() => {
+      const { cValue, increase } = useHookux(() => {
         const observed = reactive({ foo: 1 });
         const cValue = computed(() => observed.foo + 1);
         return {
@@ -92,7 +92,7 @@ describe('core/component', () => {
     const fn = jest.fn();
 
     const Example = () => {
-      const { observed, increase } = useHux(() => {
+      const { observed, increase } = useHookux(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -130,7 +130,7 @@ describe('core/component', () => {
     };
 
     const Parent = () => {
-      const { observed, increase } = useHux(() => {
+      const { observed, increase } = useHookux(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,

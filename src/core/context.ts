@@ -1,9 +1,9 @@
 import React from 'react';
 
-export const HuxContext = /*#__PURE__*/ React.createContext(null);
+export const HookuxContext = /*#__PURE__*/ React.createContext(null);
 
 if (process.env.NODE_ENV !== 'production') {
-  HuxContext.displayName = 'HuxContext';
+  HookuxContext.displayName = 'HookuxContext';
 }
 
-export default HuxContext;
+export default HookuxContext;

@@ -40,12 +40,14 @@ describe('reactivity/reactive', () => {
 
     expect(() => {
       observed.bar = 1;
-    }).toThrowError(/Cannot set key: bar, hux state is readonly except in coresponding reducer./);
+    }).toThrowError(
+      /Cannot set key: bar, hookux state is readonly except in coresponding reducer./
+    );
 
     expect(() => {
       delete observed.foo;
     }).toThrowError(
-      /Cannot delete key: foo, hux state is readonly except in coresponding reducer./
+      /Cannot delete key: foo, hookux state is readonly except in coresponding reducer./
     );
   });
 

@@ -38,12 +38,14 @@ describe('reactivity/traceRef', () => {
     expect(() => {
       delete traceRef.value.foo;
     }).toThrowError(
-      /Cannot delete key: foo, hux state is readonly except in coresponding reducer./
+      /Cannot delete key: foo, hookux state is readonly except in coresponding reducer./
     );
 
     expect(() => {
       traceRef.value.foo = 2;
-    }).toThrowError(/Cannot set key: foo, hux state is readonly except in coresponding reducer./);
+    }).toThrowError(
+      /Cannot set key: foo, hookux state is readonly except in coresponding reducer./
+    );
   });
 
   it('should no longer call scheduler when reactive trace effect stopped', () => {
@@ -122,6 +124,8 @@ describe('reactivity/traceRef', () => {
 
     expect(() => {
       observed1.foo = 2;
-    }).toThrowError(/Cannot set key: foo, hux state is readonly except in coresponding reducer./);
+    }).toThrowError(
+      /Cannot set key: foo, hookux state is readonly except in coresponding reducer./
+    );
   });
 });

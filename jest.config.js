@@ -3,7 +3,7 @@ module.exports = {
   globals: {
     __DEV__: true,
     __BROWSER__: false,
-    __JSDOM__: true,
+    __JSDOM__: true
   },
   coverageDirectory: 'coverage',
   coverageReporters: ['html', 'lcov', 'text'],
@@ -11,8 +11,8 @@ module.exports = {
   watchPathIgnorePatterns: ['/node_modules/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
   moduleNameMapper: {
-    hux: '<rootDir>/src',
+    hookux: '<rootDir>/src'
   },
   rootDir: __dirname,
-  testMatch: ['<rootDir>/src/**/__tests__/**/*spec.[jt]s?(x)'],
+  testMatch: ['<rootDir>/src/**/__tests__/**/*spec.[jt]s?(x)']
 };

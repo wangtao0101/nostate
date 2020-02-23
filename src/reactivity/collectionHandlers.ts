@@ -56,7 +56,7 @@ function createSize(effect?: ReactiveEffect): (target: IterableCollections) => n
 function add(this: SetTypes, value: unknown): any {
   if (VALUE_LOCKED) {
     throw new Error(
-      `Cannot add value: ${String(value)}, hux state is readonly except in coresponding reducer.`
+      `Cannot add value: ${String(value)}, hookux state is readonly except in coresponding reducer.`
     );
   }
   value = toRaw(value);
@@ -73,7 +73,7 @@ function add(this: SetTypes, value: unknown): any {
 function set(this: MapTypes, key: unknown, value: unknown): void {
   if (VALUE_LOCKED) {
     throw new Error(
-      `Cannot set key: ${String(key)}, hux state is readonly except in coresponding reducer.`
+      `Cannot set key: ${String(key)}, hookux state is readonly except in coresponding reducer.`
     );
   }
 
@@ -96,7 +96,7 @@ function set(this: MapTypes, key: unknown, value: unknown): void {
 
 function deleteEntry(this: CollectionTypes, key: unknown): void {
   if (VALUE_LOCKED) {
-    throw new Error(`Cannot delete key: ${String(key)} of hux state except in reducer.`);
+    throw new Error(`Cannot delete key: ${String(key)} of hookux state except in reducer.`);
   }
   key = toRaw(key);
   const target = toRaw(this);
@@ -197,7 +197,7 @@ function createReadonlyMethod(method: Function, type: TriggerOpTypes): Function 
     throw new Error(
       `${capitalize(
         type
-      )} operation ${key} failed: hux state is readonly except in coresponding reducer.`
+      )} operation ${key} failed: hookux state is readonly except in coresponding reducer.`
     );
   };
 }

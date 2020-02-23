@@ -7,7 +7,9 @@ describe('reactivity/collections', () => {
       const observed = reactive(new Map());
       expect(() => {
         observed.set('foo', 1);
-      }).toThrowError(/Cannot set key: foo, hux state is readonly except in coresponding reducer./);
+      }).toThrowError(
+        /Cannot set key: foo, hookux state is readonly except in coresponding reducer./
+      );
     });
   });
 

@@ -1,13 +1,14 @@
 {
-  "name": "hux",
-  "version": "0.0.0",
-  "description": "Simple state management for react.",
-  "main": "dist/hux.cjs.js",
-  "module": "dist/hux.es.js",
-  "types": "dist/hux.d.ts",
+  "name": "hookux",
+  "version": "0.1.0-bata.1",
+  "description": "Simple hookux style state management for react.",
+  "main": "dist/hookux.cjs.js",
+  "module": "dist/hookux.es.js",
+  "types": "dist/hookux.d.ts",
   "scripts": {
     "build": "node scripts/build.js",
-    "test": "jest"
+    "test": "jest",
+    "pb": "npm run build && npm publish --registry=https://registry.npmjs.org/"
   },
   "husky": {
     "hooks": {
@@ -23,14 +24,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wangtao0101/hux.git"
+    "url": "git+https://github.com/wangtao0101/hookux.git"
   },
   "author": "wangtao0101",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wangtao0101/hux/issues"
+    "url": "https://github.com/wangtao0101/hookux/issues"
   },
-  "homepage": "https://github.com/wangtao0101/hux#readme",
+  "homepage": "https://github.com/wangtao0101/hookux#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.7.5",
     "@rollup/plugin-replace": "^2.3.1",

@@ -7,7 +7,9 @@ describe('reactivity/collections', () => {
       const observed = reactive(new Set());
       expect(() => {
         observed.add(1);
-      }).toThrowError(/Cannot add value: 1, hux state is readonly except in coresponding reducer./);
+      }).toThrowError(
+        /Cannot add value: 1, hookux state is readonly except in coresponding reducer./
+      );
     });
   });
 

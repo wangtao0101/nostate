@@ -1,12 +1,12 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useHux } from '../useHux';
+import { useHookux } from '../useHookux';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
 
-describe('core/useHux', () => {
+describe('core/useHookux', () => {
   it('should update reactive value', () => {
     const { result } = renderHook(() =>
-      useHux(() => {
+      useHookux(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -30,7 +30,7 @@ describe('core/useHux', () => {
 
   it('should update computed value', () => {
     const { result } = renderHook(() =>
-      useHux(() => {
+      useHookux(() => {
         const observed = reactive({ foo: 1 });
 
         const cValue = computed(() => observed.foo + 1);
@@ -56,7 +56,7 @@ describe('core/useHux', () => {
 
   it('should pass number', () => {
     const { result } = renderHook(() =>
-      useHux((a: number) => {
+      useHookux((a: number) => {
         const observed = reactive({ foo: a });
 
         return {
@@ -72,7 +72,7 @@ describe('core/useHux', () => {
 
   it('should pass object props', () => {
     const { result } = renderHook(() =>
-      useHux(
+      useHookux(
         ({ a }: { a: number }) => {
           const observed = reactive({ foo: a });
 

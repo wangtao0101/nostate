@@ -6,11 +6,11 @@ const resolve = d => path.resolve(__dirname, d);
 
 export default [
   createConfig({
-    file: resolve('dist/hux.cjs.js'),
+    file: resolve('dist/hookux.cjs.js'),
     format: 'cjs'
   }),
   createConfig({
-    file: resolve('dist/hux.es.js'),
+    file: resolve('dist/hookux.es.js'),
     format: 'es'
   })
 ];

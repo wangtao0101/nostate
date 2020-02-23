@@ -14,7 +14,7 @@ import {
 
 type WrapTanceRef<T> = { [P in keyof T]: T[P] extends Ref ? TraceRef<T[P]> : T[P] };
 
-export function useHux<RawBindings extends Record<string, any>, T extends any[]>(
+export function useHookux<RawBindings extends Record<string, any>, T extends any[]>(
   setup: (...args: T) => RawBindings,
   ...args: T
 ): WrapTanceRef<RawBindings> {
