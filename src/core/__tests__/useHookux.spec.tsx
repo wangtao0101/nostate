@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useHookux } from '../useHookux';
+import { useHookux } from '../component/useHookux';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
 

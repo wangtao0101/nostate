@@ -1,11 +1,12 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useHookux } from '../useHookux';
+import { useHookux } from '../component/useHookux';
 import { reducer } from '../reducer';
 import { reactive } from '../../reactivity';
-import { Provider } from '../provider';
+import { Provider } from '../component/provider';
 import { createGlobalHookux, createLocalHookux } from '../createHookux';
+import { createStore } from '../createStore';
 
 const setup = createGlobalHookux(
   () => {
@@ -36,8 +37,10 @@ describe('core/createGlobalHookux', () => {
       );
     };
 
+    const store = createStore();
+
     const { getByTestId, queryByText } = render(
-      <Provider>
+      <Provider store={store}>
         <Example />
       </Provider>
     );
@@ -65,8 +68,10 @@ describe('core/createGlobalHookux', () => {
       return <div>{observed.foo + 10}</div>;
     };
 
+    const store = createStore();
+
     const { getByTestId, queryByText } = render(
-      <Provider>
+      <Provider store={store}>
         <Example1 />
         <Example2 />
       </Provider>
@@ -113,8 +118,10 @@ describe('core/createGlobalHookux', () => {
       );
     };
 
+    const store = createStore();
+
     const { getByTestId, queryByText } = render(
-      <Provider>
+      <Provider store={store}>
         <Parent />
       </Provider>
     );
@@ -157,8 +164,10 @@ describe('core/createLocalHookux', () => {
       );
     };
 
+    const store = createStore();
+
     const { getByTestId, queryByText } = render(
-      <Provider>
+      <Provider store={store}>
         <Example />
       </Provider>
     );

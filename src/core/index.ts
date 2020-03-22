@@ -1,3 +1,5 @@
 export { reducer } from './reducer';
-export { useHookux } from './useHookux';
-export { HookuxContext } from './context';
+export { useHookux } from './component/useHookux';
+export { HookuxContext } from './component/context';
+export { createStore } from './createStore';
+export { createGlobalHookux, createLocalHookux } from './createHookux';

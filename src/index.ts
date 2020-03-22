@@ -8,4 +8,11 @@ export {
   toRaw
 } from './reactivity';
 
-export { reducer, useHookux, HookuxContext } from './core';
+export {
+  reducer,
+  useHookux,
+  HookuxContext,
+  createStore,
+  createGlobalHookux,
+  createLocalHookux
+} from './core';
