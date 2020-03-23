@@ -12,6 +12,7 @@ export {
   reducer,
   useHookux,
   HookuxContext,
+  Provider,
   createStore,
   createGlobalHookux,
   createLocalHookux
