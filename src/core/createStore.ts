@@ -42,8 +42,8 @@ export function bindSetup<ISetupReturn extends Record<string, any>, T extends an
   };
 }
 
-export function createStore(initial?: Record<string, any>) {
-  const state = initial || {};
+export function createStore() {
+  const state: Record<string, any> = {};
   const listenersMap: Record<any, Function[]> = {} as any;
 
   const schedule = function(setup: any) {
