@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { useHookux } from '../useHookux';
 import { reducer } from '../reducer';
 import { reactive } from '../../reactivity';
-import { create } from '../create';
+import { create, listenersMap } from '../create';
 
 describe('core/setup global hook', () => {
   it('should rerender when change reactive value when use global hookux', () => {
@@ -37,6 +37,30 @@ describe('core/setup global hook', () => {
     const node = getByTestId('id');
     fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
     expect(queryByText('2')).not.toBeNull();
+  });
+
+  it('should untap listener when component destroy', () => {
+    const setupFn = () => {
+      const observed = reactive({ foo: 1 });
+      return {
+        observed
+      };
+    };
+
+    const setup = create(setupFn);
+
+    const Example = () => {
+      const { observed } = useHookux(setup);
+
+      return <div data-testid="id">{observed.foo}</div>;
+    };
+
+    const { queryByText, unmount } = render(<Example />);
+    expect(queryByText('1')).not.toBeNull();
+
+    expect(listenersMap[setupFn as any].length).toBe(1);
+    unmount();
+    expect(listenersMap[setupFn as any].length).toBe(0);
   });
 
   it('should rerender all instance when change reactive value when use global hookux', () => {

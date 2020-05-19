@@ -31,6 +31,7 @@ export function useHookux<P extends Record<string, any>>(setup: ISetup<P>): IHoo
   useLayoutEffect(() => {
     return () => {
       if (meta) {
+        meta.untap(scheduler);
         return;
       }
       for (const effect of effectsRef.current) {
