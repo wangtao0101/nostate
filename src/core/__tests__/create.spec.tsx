@@ -1,32 +1,26 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useHookux } from '../component/useHookux';
+import { useHookux } from '../useHookux';
 import { reducer } from '../reducer';
 import { reactive } from '../../reactivity';
-import { Provider } from '../component/provider';
-import { createGlobalHookux, createLocalHookux } from '../createHookux';
-import { createStore } from '../createStore';
+import { create } from '../create';
 
-const setup = createGlobalHookux(
-  () => {
-    const observed = reactive({ foo: 1 });
-    return {
-      observed,
-      increase: reducer(() => {
-        // triger mutiple action
-        observed.foo += 1;
-        observed.foo -= 1;
-        observed.foo += 1;
-      })
-    };
-  },
-  'a',
-  'b'
-);
-
-describe('core/createGlobalHookux', () => {
+describe('core/setup global hook', () => {
   it('should rerender when change reactive value when use global hookux', () => {
+    const setup = create(() => {
+      const observed = reactive({ foo: 1 });
+      return {
+        observed,
+        increase: reducer(() => {
+          // triger mutiple action
+          observed.foo += 1;
+          observed.foo -= 1;
+          observed.foo += 1;
+        })
+      };
+    });
+
     const Example = () => {
       const { observed, increase } = useHookux(setup);
 
@@ -37,13 +31,7 @@ describe('core/createGlobalHookux', () => {
       );
     };
 
-    const store = createStore();
-
-    const { getByTestId, queryByText } = render(
-      <Provider store={store}>
-        <Example />
-      </Provider>
-    );
+    const { getByTestId, queryByText } = render(<Example />);
     expect(queryByText('1')).not.toBeNull();
 
     const node = getByTestId('id');
@@ -52,6 +40,16 @@ describe('core/createGlobalHookux', () => {
   });
 
   it('should rerender all instance when change reactive value when use global hookux', () => {
+    const setup = create(() => {
+      const observed = reactive({ foo: 1 });
+      return {
+        observed,
+        increase: reducer(() => {
+          observed.foo += 1;
+        })
+      };
+    });
+
     const Example1 = () => {
       const { observed, increase } = useHookux(setup);
 
@@ -68,13 +66,11 @@ describe('core/createGlobalHookux', () => {
       return <div>{observed.foo + 10}</div>;
     };
 
-    const store = createStore();
-
     const { getByTestId, queryByText } = render(
-      <Provider store={store}>
+      <div>
         <Example1 />
         <Example2 />
-      </Provider>
+      </div>
     );
     expect(queryByText('1')).not.toBeNull();
     expect(queryByText('11')).not.toBeNull();
@@ -88,6 +84,16 @@ describe('core/createGlobalHookux', () => {
   it('Parent should render before child, and all element should only render once', () => {
     let shouldCollect = false;
     const collect: number[] = [];
+
+    const setup = create(() => {
+      const observed = reactive({ foo: 1 });
+      return {
+        observed,
+        increase: reducer(() => {
+          observed.foo += 1;
+        })
+      };
+    });
 
     const Child = () => {
       const { observed, increase } = useHookux(setup);
@@ -118,12 +124,10 @@ describe('core/createGlobalHookux', () => {
       );
     };
 
-    const store = createStore();
-
     const { getByTestId, queryByText } = render(
-      <Provider store={store}>
+      <>
         <Parent />
-      </Provider>
+      </>
     );
     expect(queryByText('1')).not.toBeNull();
     expect(queryByText('11')).not.toBeNull();
@@ -135,46 +139,5 @@ describe('core/createGlobalHookux', () => {
     expect(queryByText('2')).not.toBeNull();
     expect(queryByText('12')).not.toBeNull();
     expect(collect).toEqual([1, 2]);
-  });
-});
-
-describe('core/createLocalHookux', () => {
-  it('should rerender when change reactive value when use global hookux', () => {
-    const setupLocal = createLocalHookux(
-      () => {
-        const observed = reactive({ foo: 1 });
-        return {
-          observed,
-          increase: reducer(() => {
-            observed.foo += 1;
-          })
-        };
-      },
-      'a',
-      'b'
-    );
-
-    const Example = () => {
-      const { observed, increase } = useHookux(setupLocal);
-
-      return (
-        <div data-testid="id" onClick={() => increase()}>
-          {observed.foo}
-        </div>
-      );
-    };
-
-    const store = createStore();
-
-    const { getByTestId, queryByText } = render(
-      <Provider store={store}>
-        <Example />
-      </Provider>
-    );
-    expect(queryByText('1')).not.toBeNull();
-
-    const node = getByTestId('id');
-    fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
-    expect(queryByText('2')).not.toBeNull();
   });
 });

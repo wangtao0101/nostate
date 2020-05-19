@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useHookux } from '../component/useHookux';
+import { useHookux } from '../useHookux';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
 
@@ -52,40 +52,5 @@ describe('core/useHookux', () => {
     });
 
     expect(cValue.value).toBe(3);
-  });
-
-  it('should pass number', () => {
-    const { result } = renderHook(() =>
-      useHookux((a: number) => {
-        const observed = reactive({ foo: a });
-
-        return {
-          observed
-        };
-      }, 2)
-    );
-
-    const { observed } = result.current;
-
-    expect(observed.foo).toBe(2);
-  });
-
-  it('should pass object props', () => {
-    const { result } = renderHook(() =>
-      useHookux(
-        ({ a }: { a: number }) => {
-          const observed = reactive({ foo: a });
-
-          return {
-            observed
-          };
-        },
-        { a: 2 }
-      )
-    );
-
-    const { observed } = result.current;
-
-    expect(observed.foo).toBe(2);
   });
 });

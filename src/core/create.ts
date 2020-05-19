@@ -9,15 +9,14 @@ import {
 
 const listenersMap: Record<any, Function[]> = {} as any;
 
-export type ISetup<T extends any[], P extends Record<string, any>> = (...args: T) => P;
-export type GlobalSetupReturn = ReturnType<typeof setup>;
+export interface Type<T> extends Function {
+  new (...args: any[]): T;
+}
 
-export function bindSetup<P extends Record<string, any>, T extends any[]>(
-  fn: ISetup<T, P>,
-  call: () => void,
-  ...args: T
-) {
-  const binds = fn(...args);
+export type ISetup<P extends Record<string, any>> = () => P;
+
+export function bindSetup<P extends Record<string, any>>(fn: ISetup<P>, call: () => void) {
+  const binds = fn();
   const bindsMap: Record<string, any> = {};
   const effectsSet: Set<ReactiveEffect> = new Set();
 
@@ -42,10 +41,9 @@ export function bindSetup<P extends Record<string, any>, T extends any[]>(
   };
 }
 
-export function setup<P extends Record<string, any>, T extends any[]>(
-  fn: ISetup<T, P>,
-  ...args: T
-) {
+export function create<P extends Record<string, any>>(fn: ISetup<P>) {
+  listenersMap[fn as any] = [];
+
   const call = function() {
     listenersMap[fn as any].map(lis => {
       lis();
@@ -54,13 +52,13 @@ export function setup<P extends Record<string, any>, T extends any[]>(
 
   const tap = (listener: any) => listenersMap[fn as any].push(listener);
 
-  const { bindsMap, effectsSet } = bindSetup(fn, call, ...args);
+  const { bindsMap, effectsSet } = bindSetup(fn, call);
 
-  return {
+  (fn as any).meta = {
     bindsMap,
     effectsSet,
-    call,
-    tap,
-    _isGlobal: true
+    tap
   };
+
+  return fn;
 }

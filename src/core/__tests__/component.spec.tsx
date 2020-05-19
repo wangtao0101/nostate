@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useHookux } from '../component/useHookux';
+import { useHookux } from '../useHookux';
 import { reducer } from '../reducer';
 import { reactive, computed } from '../../reactivity';
 
