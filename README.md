@@ -83,25 +83,21 @@ Global scope state
 > Every component has same state when they use the global setup
 
 ```js
-import { reactive, reducer } from 'hookux';
+import { reactive, reducer, create } from 'hookux';
 
-export const setup = createGlobalHookux(
-  () => {
-    const state = reactive({ count: 0 });
+// create will run wrap function immediately
+export const setup = create(() => {
+  const state = reactive({ count: 0 });
 
-    const increase = reducer((num: number) => {
-      state.count += num;
-    });
+  const increase = reducer((num: number) => {
+    state.count += num;
+  });
 
-    return {
-      state,
-      increase
-    };
-  },
-  // you can touch the return data of global setup by store.module.setup
-  'module',
-  'setup'
-);
+  return {
+    state,
+    increase
+  };
+});
 
 export function App() {
   const { state, increase } = useHookux(setup);
@@ -116,19 +112,6 @@ export function App() {
 ```
 
 ## API
-
-### createStore and Provider
-
-```js
-const store = createStore();
-
-ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById("root") as HTMLElement
-);
-```
 
 ### reactive
 
