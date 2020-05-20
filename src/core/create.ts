@@ -41,18 +41,20 @@ export function bindSetup<P extends Record<string, any>>(fn: ISetup<P>, call: ()
   };
 }
 
-export function create<P extends Record<string, any>>(fn: ISetup<P>) {
-  listenersMap[fn as any] = [];
+export function create<P extends Record<string, any>>(fn: ISetup<P>): ISetup<P> {
+  const emptyFn = () => {};
+
+  listenersMap[emptyFn as any] = [];
 
   const call = function() {
-    listenersMap[fn as any].map(lis => {
+    listenersMap[emptyFn as any].map(lis => {
       lis();
     });
   };
 
-  const tap = (listener: any) => listenersMap[fn as any].push(listener);
+  const tap = (listener: any) => listenersMap[emptyFn as any].push(listener);
   const untap = (listener: any) => {
-    const listeners = listenersMap[fn as any];
+    const listeners = listenersMap[emptyFn as any];
     const index = listeners.findIndex(l => l === listener);
     if (index !== -1) {
       listeners.splice(index, 1);
@@ -61,12 +63,12 @@ export function create<P extends Record<string, any>>(fn: ISetup<P>) {
 
   const { bindsMap, effectsSet } = bindSetup(fn, call);
 
-  (fn as any).meta = {
+  (emptyFn as any).meta = {
     bindsMap,
     effectsSet,
     tap,
     untap
   };
 
-  return fn;
+  return emptyFn as any;
 }

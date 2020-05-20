@@ -58,9 +58,9 @@ describe('core/setup global hook', () => {
     const { queryByText, unmount } = render(<Example />);
     expect(queryByText('1')).not.toBeNull();
 
-    expect(listenersMap[setupFn as any].length).toBe(1);
+    expect(listenersMap[setup as any].length).toBe(1);
     unmount();
-    expect(listenersMap[setupFn as any].length).toBe(0);
+    expect(listenersMap[setup as any].length).toBe(0);
   });
 
   it('should rerender all instance when change reactive value when use global hookux', () => {
