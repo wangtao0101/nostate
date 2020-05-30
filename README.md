@@ -1,12 +1,12 @@
-# hookux
+# nostate
 
 Simple state management for react.
 
 ## Installation
 
 ```
-npm install hookux --save
-yarn add hookux
+npm install nostate --save
+yarn add nostate
 ```
 
 ## Motivation
@@ -35,7 +35,7 @@ Component scope state.
 > Every component has independent state when they use the same setup
 
 ```js
-import { reactive, reducer } from 'hookux';
+import { reactive, reducer } from 'nostate';
 
 const sleep = () => {
   return new Promise(resolve => {
@@ -66,7 +66,7 @@ export const setup = () => {
 
 export function App() {
   // state is immutable here
-  const { state, increase, asyncIncrease } = useHookux(setup);
+  const { state, increase, asyncIncrease } = useSetup(setup);
 
   return (
     <div>
@@ -83,7 +83,7 @@ Global scope state
 > Every component has same state when they use the global setup
 
 ```js
-import { reactive, reducer, create } from 'hookux';
+import { reactive, reducer, create } from 'nostate';
 
 // create will run wrap function immediately
 export const setup = create(() => {
@@ -100,7 +100,7 @@ export const setup = create(() => {
 });
 
 export function App() {
-  const { state, increase } = useHookux(setup);
+  const { state, increase } = useSetup(setup);
 
   return (
     <div>

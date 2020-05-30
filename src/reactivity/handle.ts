@@ -47,13 +47,13 @@ function lockSetter(
   _receiver: object
 ): boolean {
   throw new Error(
-    `Cannot set key: ${String(key)}, hookux state is readonly except in coresponding reducer.`
+    `Cannot set key: ${String(key)}, nostate state is readonly except in coresponding reducer.`
   );
 }
 
 function lockDeleteProperty(_target: object, key: string | symbol): boolean {
   throw new Error(
-    `Cannot delete key: ${String(key)}, hookux state is readonly except in coresponding reducer.`
+    `Cannot delete key: ${String(key)}, nostate state is readonly except in coresponding reducer.`
   );
 }
 
@@ -63,7 +63,9 @@ function createMutableHandles(): ProxyHandler<object> {
     set: (target: object, key: string | symbol, value: unknown, receiver: object): boolean => {
       if (VALUE_LOCKED) {
         throw new Error(
-          `Cannot set key: ${String(key)}, hookux state is readonly except in coresponding reducer.`
+          `Cannot set key: ${String(
+            key
+          )}, nostate state is readonly except in coresponding reducer.`
         );
       }
 
@@ -87,7 +89,7 @@ function createMutableHandles(): ProxyHandler<object> {
         throw new Error(
           `Cannot delete key: ${String(
             key
-          )}, hookux state is readonly except in coresponding reducer.`
+          )}, nostate state is readonly except in coresponding reducer.`
         );
       }
       const hadKey = hasOwn(target, key);

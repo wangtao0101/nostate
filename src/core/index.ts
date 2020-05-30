@@ -1,3 +1,3 @@
 export { reducer } from './reducer';
-export { useHookux } from './useHookux';
+export { useSetup } from './useSetup';
 export { create } from './create';

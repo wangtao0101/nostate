@@ -1,10 +1,10 @@
 {
-  "name": "hookux",
-  "version": "0.2.0",
-  "description": "Simple hookux style state management for react.",
-  "main": "dist/hookux.cjs.js",
-  "module": "dist/hookux.es.js",
-  "types": "dist/hookux.d.ts",
+  "name": "nostate",
+  "version": "0.0.1",
+  "description": "Simple state management for react.",
+  "main": "dist/nostate.cjs.js",
+  "module": "dist/nostate.es.js",
+  "types": "dist/nostate.d.ts",
   "scripts": {
     "build": "node scripts/build.js",
     "test": "jest",
@@ -24,14 +24,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wangtao0101/hookux.git"
+    "url": "git+https://github.com/wangtao0101/nostate.git"
   },
   "author": "wangtao0101",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wangtao0101/hookux/issues"
+    "url": "https://github.com/wangtao0101/nostate/issues"
   },
-  "homepage": "https://github.com/wangtao0101/hookux#readme",
+  "homepage": "https://github.com/wangtao0101/nostate#readme",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.7.5",
     "@rollup/plugin-replace": "^2.3.1",

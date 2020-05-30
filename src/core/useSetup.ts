@@ -5,7 +5,7 @@ import { ISetup, bindSetup } from './create';
 
 export type IHookuxReturn<T> = { [P in keyof T]: T[P] extends Ref ? TraceRef<T[P]> : T[P] };
 
-export function useHookux<P extends Record<string, any>>(setup: ISetup<P>): IHookuxReturn<P> {
+export function useSetup<P extends Record<string, any>>(setup: ISetup<P>): IHookuxReturn<P> {
   const [, forceRender] = useReducer(s => s + 1, 0);
 
   const effectsRef = useRef<Set<ReactiveEffect>>(new Set());

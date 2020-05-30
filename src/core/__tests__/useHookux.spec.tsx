@@ -1,12 +1,12 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useHookux } from '../useHookux';
+import { useSetup } from '../useSetup';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
 
-describe('core/useHookux', () => {
+describe('core/useSetup', () => {
   it('should update reactive value', () => {
     const { result } = renderHook(() =>
-      useHookux(() => {
+      useSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -30,7 +30,7 @@ describe('core/useHookux', () => {
 
   it('should update computed value', () => {
     const { result } = renderHook(() =>
-      useHookux(() => {
+      useSetup(() => {
         const observed = reactive({ foo: 1 });
 
         const cValue = computed(() => observed.foo + 1);

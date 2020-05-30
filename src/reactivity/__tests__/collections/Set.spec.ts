@@ -8,7 +8,7 @@ describe('reactivity/collections', () => {
       expect(() => {
         observed.add(1);
       }).toThrowError(
-        /Cannot add value: 1, hookux state is readonly except in coresponding reducer./
+        /Cannot add value: 1, nostate state is readonly except in coresponding reducer./
       );
     });
   });

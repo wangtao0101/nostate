@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useHookux } from '../useHookux';
+import { useSetup } from '../useSetup';
 import { reducer } from '../reducer';
 import { reactive } from '../../reactivity';
 import { create, listenersMap } from '../create';
 
-describe('core/setup global hook', () => {
-  it('should rerender when change reactive value when use global hookux', () => {
+describe('core/setup global setup', () => {
+  it('should rerender when change reactive value when use global nostate', () => {
     const setup = create(() => {
       const observed = reactive({ foo: 1 });
       return {
@@ -22,7 +22,7 @@ describe('core/setup global hook', () => {
     });
 
     const Example = () => {
-      const { observed, increase } = useHookux(setup);
+      const { observed, increase } = useSetup(setup);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -50,7 +50,7 @@ describe('core/setup global hook', () => {
     const setup = create(setupFn);
 
     const Example = () => {
-      const { observed } = useHookux(setup);
+      const { observed } = useSetup(setup);
 
       return <div data-testid="id">{observed.foo}</div>;
     };
@@ -63,7 +63,7 @@ describe('core/setup global hook', () => {
     expect(listenersMap[setup as any].length).toBe(0);
   });
 
-  it('should rerender all instance when change reactive value when use global hookux', () => {
+  it('should rerender all instance when change reactive value when use global nostate', () => {
     const setup = create(() => {
       const observed = reactive({ foo: 1 });
       return {
@@ -75,7 +75,7 @@ describe('core/setup global hook', () => {
     });
 
     const Example1 = () => {
-      const { observed, increase } = useHookux(setup);
+      const { observed, increase } = useSetup(setup);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -85,7 +85,7 @@ describe('core/setup global hook', () => {
     };
 
     const Example2 = () => {
-      const { observed } = useHookux(setup);
+      const { observed } = useSetup(setup);
 
       return <div>{observed.foo + 10}</div>;
     };
@@ -120,7 +120,7 @@ describe('core/setup global hook', () => {
     });
 
     const Child = () => {
-      const { observed, increase } = useHookux(setup);
+      const { observed, increase } = useSetup(setup);
 
       if (shouldCollect) {
         collect.push(2);
@@ -134,7 +134,7 @@ describe('core/setup global hook', () => {
     };
 
     const Parent = () => {
-      const { observed } = useHookux(setup);
+      const { observed } = useSetup(setup);
 
       if (shouldCollect) {
         collect.push(1);
