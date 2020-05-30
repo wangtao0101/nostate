@@ -18,7 +18,7 @@ type getReturnType<P> = P extends () => any ? ReturnType<P> : P;
 type MapToSetup<T> = { [P in keyof T]: getReturnType<T[P]> };
 
 export function connect<P extends () => any, T extends Record<string, P>>(
-  mapHookuxToProps: T,
+  mapSetupToProps: T,
   extraOptions: ExtraOptions = {}
 ): InferableComponentEnhancerWithProps<MapToSetup<T>, {}> {
   return function wrapWithConnect(WrappedComponent: any) {
@@ -35,8 +35,8 @@ export function connect<P extends () => any, T extends Record<string, P>>(
       }, []);
 
       useMemo(() => {
-        Object.keys(mapHookuxToProps).map(key => {
-          const setup = mapHookuxToProps[key];
+        Object.keys(mapSetupToProps).map(key => {
+          const setup = mapSetupToProps[key];
           const meta: any = (setup as any).meta;
           if (meta) {
             bindsRef.current[key] = meta.bindsMap;
@@ -52,8 +52,8 @@ export function connect<P extends () => any, T extends Record<string, P>>(
 
       useLayoutEffect(() => {
         return () => {
-          Object.keys(mapHookuxToProps).map((key, index) => {
-            const setup = mapHookuxToProps[key];
+          Object.keys(mapSetupToProps).map((key, index) => {
+            const setup = mapSetupToProps[key];
             const meta: any = (setup as any).meta;
             if (meta) {
               meta.untap(scheduler);
@@ -74,7 +74,7 @@ export function connect<P extends () => any, T extends Record<string, P>>(
       extraOptions.forwardRef,
       ConnectFunction,
       WrappedComponent,
-      'HookuxConnect'
+      'NostateConnect'
     );
   };
 }
