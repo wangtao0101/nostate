@@ -16,19 +16,32 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macOS-latest]
+        platform: [ubuntu-latest]
         node: ['12', '10']
     name: test/node ${{ matrix.node }}/${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - uses: actions/setup-node@master
         with:
           node-version: ${{ matrix.node }}
+
+      - run: npm install
+      - run: npm run test
+
+  coverage:
+    needs: [test]
+    name: coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@master
+        with:
+          node-version: '12'
 
       - run: npm install
       - run: npm run coverage
