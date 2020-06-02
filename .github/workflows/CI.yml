@@ -27,4 +27,6 @@ jobs:
 
     # Runs a set of commands using the runners shell
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v1
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
