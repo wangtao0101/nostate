@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "jest",
+    "coverage": "jest --coverage",
     "pb": "npm run test && npm run build && npm publish --registry=https://registry.npmjs.org/"
   },
   "husky": {
