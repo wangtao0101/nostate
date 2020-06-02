@@ -1,4 +1,6 @@
 # nostate
+[![Github action Status](https://github.com/wangtao0101/nostate/workflows/build/badge.svg)](https://github.com/wangtao0101/nostate/actions)
+[![Coverage Status](https://coveralls.io/repos/github/wangtao0101/nostate/badge.svg)](https://coveralls.io/github/wangtao0101/nostate)
 
 Simple state management for react.
 
