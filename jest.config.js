@@ -7,7 +7,6 @@ module.exports = {
   },
   coverageDirectory: 'coverage',
   coverageReporters: ['html', 'lcov', 'text'],
-  collectCoverageFrom: ['/src/*.ts', '/src/**/*.ts'],
   watchPathIgnorePatterns: ['/node_modules/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
   moduleNameMapper: {
