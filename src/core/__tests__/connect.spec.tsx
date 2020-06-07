@@ -122,4 +122,44 @@ describe('core/connect', () => {
     fireEvent(node1, new MouseEvent('click', { bubbles: true, cancelable: false }));
     expect(queryAllByText('2')).not.toBe(2);
   });
+
+  it('should support forwardRef', () => {
+    interface Props {
+      localSetup: ReturnType<typeof localSetup>;
+    }
+
+    const fn = jest.fn();
+
+    class Example1 extends React.Component<Props> {
+      fn: any;
+      constructor(props: any) {
+        super(props);
+        this.fn = fn;
+      }
+
+      render() {
+        const { observed, increase } = this.props.localSetup;
+        return (
+          <div>
+            <div data-testid="id3" onClick={() => increase()}>
+              {observed.foo}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    const Connected = connect(
+      { localSetup: localSetup },
+      { forwardRef: true }
+    )(Example1);
+
+    const ref = React.createRef<any>();
+    const { queryAllByText } = render(<Connected ref={ref} />);
+    expect(queryAllByText('1').length).toBe(1);
+
+    ref.current.fn();
+
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
 });

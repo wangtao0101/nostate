@@ -9,6 +9,7 @@ module.exports = {
   coverageReporters: ['html', 'lcov', 'text'],
   watchPathIgnorePatterns: ['/node_modules/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
+  coveragePathIgnorePatterns: ['mockWarn'],
   moduleNameMapper: {
     nostate: '<rootDir>/src'
   },
