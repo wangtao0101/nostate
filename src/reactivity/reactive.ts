@@ -89,7 +89,7 @@ function createReactiveObject(
   observed = new Proxy(target, handlers);
 
   toRaw.set(observed, target);
-  setProxy(target, observed, toProxy);
+  setProxy(target, observed, toProxy, effect);
 
   if (!targetMap.has(target)) {
     targetMap.set(target, new Map());

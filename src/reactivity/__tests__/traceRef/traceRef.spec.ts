@@ -36,6 +36,7 @@ describe('reactivity/traceRef', () => {
     const traceRef = reactiveTrace(original, fnSpy);
 
     expect(() => {
+      // @ts-ignore
       delete traceRef.value.foo;
     }).toThrowError(
       /Cannot delete key: foo, nostate state is readonly except in coresponding reducer./
@@ -127,5 +128,16 @@ describe('reactivity/traceRef', () => {
     }).toThrowError(
       /Cannot set key: foo, nostate state is readonly except in coresponding reducer./
     );
+  });
+
+  it('should get same reactive obj', () => {
+    const original = { foo: { foo: 1 } };
+    const fnSpy = jest.fn(() => {});
+
+    const traceRef = reactiveTrace(original, fnSpy);
+
+    const proxy1 = traceRef.value.foo;
+    const proxy2 = traceRef.value.foo;
+    expect(proxy1 === proxy2).toBe(true);
   });
 });
