@@ -8,8 +8,8 @@ export type CollectionTypes = IterableCollections | WeakCollections;
 
 type IterableCollections = Map<any, any> | Set<any>;
 type WeakCollections = WeakMap<any, any> | WeakSet<any>;
-type MapTypes = Map<any, any> | WeakMap<any, any>;
-type SetTypes = Set<any> | WeakSet<any>;
+// type MapTypes = Map<any, any> | WeakMap<any, any>;
+// type SetTypes = Set<any> | WeakSet<any>;
 
 const getProto = <T extends CollectionTypes>(v: T): any => Reflect.getPrototypeOf(v);
 
@@ -28,33 +28,32 @@ const collectionMethods: Array<string | symbol> = ([
 function createGetter(effect?: ReactiveEffect) {
   return function get(state: ProxyState, key: unknown): any {
     const target = state.base;
-    // target = toRaw(state);
     key = toRaw(key);
 
     track(target, TrackOpTypes.GET, key, effect);
 
-    return toReactive(getProto(target.base).get.call(target.base, key), target, effect);
+    return toReactive(getProto(target).get.call(target, key), state, effect);
   };
 }
 
 function createHas(effect?: ReactiveEffect) {
-  return function has(this: CollectionTypes, key: unknown): boolean {
-    const target = toRaw(this);
+  return function has(this: ProxyState, key: unknown): boolean {
+    const target = this.base;
     key = toRaw(key);
     track(target, TrackOpTypes.HAS, key, effect);
     return getProto(target).has.call(target, key);
   };
 }
 
-function createSize(effect?: ReactiveEffect): (target: IterableCollections) => number {
-  return function size(target: IterableCollections): number {
-    target = toRaw(target);
+function createSize(effect?: ReactiveEffect): (state: ProxyState) => number {
+  return function size(state: ProxyState): number {
+    const target = state.base;
     track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
     return Reflect.get(getProto(target), 'size', target);
   };
 }
 
-function add(this: SetTypes, value: unknown): any {
+function add(this: ProxyState, value: unknown): any {
   if (VALUE_LOCKED) {
     throw new Error(
       `Cannot add value: ${String(
@@ -62,8 +61,8 @@ function add(this: SetTypes, value: unknown): any {
       )}, nostate state is readonly except in corresponding reducer.`
     );
   }
+  const target = this.base;
   value = toRaw(value);
-  const target = toRaw(this);
   const proto = getProto(target);
   const hadKey = proto.has.call(target, value);
   const result = proto.add.call(target, value);
@@ -73,16 +72,15 @@ function add(this: SetTypes, value: unknown): any {
   return result;
 }
 
-function set(this: MapTypes, key: unknown, value: unknown): void {
+function set(this: ProxyState, key: unknown, value: unknown): void {
   if (VALUE_LOCKED) {
     throw new Error(
       `Cannot set key: ${String(key)}, nostate state is readonly except in corresponding reducer.`
     );
   }
-
+  const target = this.base;
   value = toRaw(value);
   key = toRaw(key);
-  const target = toRaw(this);
   const proto = getProto(target);
   const hadKey = proto.has.call(target, key);
   const oldValue = proto.get.call(target, key);
@@ -97,12 +95,13 @@ function set(this: MapTypes, key: unknown, value: unknown): void {
   return result;
 }
 
-function deleteEntry(this: CollectionTypes, key: unknown): void {
+function deleteEntry(this: ProxyState, key: unknown): void {
   if (VALUE_LOCKED) {
     throw new Error(`Cannot delete key: ${String(key)} of nostate state except in reducer.`);
   }
+
+  const target = this.base;
   key = toRaw(key);
-  const target = toRaw(this);
   const proto = getProto(target);
   const hadKey = proto.has.call(target, key);
   // forward the operation before queueing reactions
@@ -113,8 +112,8 @@ function deleteEntry(this: CollectionTypes, key: unknown): void {
   return result;
 }
 
-function clear(this: IterableCollections): void {
-  const target = toRaw(this);
+function clear(this: ProxyState): void {
+  const target = this.base;
   const hadItems = target.size !== 0;
   // forward the operation before queueing reactions
   const result = getProto(target).clear.call(target);
@@ -125,10 +124,10 @@ function clear(this: IterableCollections): void {
 }
 
 function createForEach(effect?: ReactiveEffect) {
-  return function forEach(this: IterableCollections, callback: Function, thisArg?: unknown): any {
+  return function forEach(this: ProxyState, callback: Function, thisArg?: unknown): any {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const observed = this;
-    const target = toRaw(observed);
+    const target = this.base;
 
     track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
 
@@ -138,8 +137,8 @@ function createForEach(effect?: ReactiveEffect) {
     function wrappedCallback(value: unknown, key: unknown): any {
       return callback.call(
         observed,
-        toReactive(value, null, effect),
-        toReactive(key, null, effect),
+        toReactive(value, observed, effect),
+        toReactive(key, observed, effect),
         observed
       );
     }
@@ -148,8 +147,10 @@ function createForEach(effect?: ReactiveEffect) {
 }
 
 function createIterableMethod(method: string | symbol, effect?: ReactiveEffect) {
-  return function(this: IterableCollections, ...args: unknown[]) {
-    const target = toRaw(this);
+  return function(this: ProxyState, ...args: unknown[]) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const observed = this;
+    const target = observed.base;
     const isPair = method === 'entries' || (method === Symbol.iterator && target instanceof Map);
     const innerIterator = getProto(target)[method].apply(target, args);
     track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
@@ -163,8 +164,8 @@ function createIterableMethod(method: string | symbol, effect?: ReactiveEffect) 
           ? { value, done }
           : {
               value: isPair
-                ? [toReactive(value[0], null, effect), toReactive(value[1], null, effect)]
-                : toReactive(value, null, effect),
+                ? [toReactive(value[0], observed, effect), toReactive(value[1], observed, effect)]
+                : toReactive(value, observed, effect),
               done
             };
       },
@@ -181,13 +182,11 @@ const has = createHas();
 const size = createSize();
 
 const mutableInstrumentations: Record<string, Function | number> = {
-  get(this: MapTypes, key: unknown) {
-    // @ts-ignore
+  get(this: ProxyState, key: unknown) {
     return get(this, key);
   },
-  //@ts-ignore
-  get size(this: IterableCollections) {
-    return size(this);
+  get size() {
+    return size((this as unknown) as ProxyState);
   },
   has,
   add,
@@ -202,7 +201,7 @@ iteratorMethods.forEach(method => {
 });
 
 function createReadonlyMethod(method: Function, type: TriggerOpTypes): Function {
-  return function(this: CollectionTypes, ...args: unknown[]) {
+  return function(this: ProxyState, ...args: unknown[]) {
     const key = args[0] ? `on key "${args[0]}" ` : ``;
     throw new Error(
       `${capitalize(
@@ -219,12 +218,14 @@ const readonlyMethod = {
   clear: createReadonlyMethod(clear, TriggerOpTypes.CLEAR)
 };
 
-function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<CollectionTypes> {
+function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<ProxyState> {
   return {
-    get: (target: CollectionTypes, key: string | symbol, receiver: CollectionTypes): any => {
+    // create a proxy for Collection's method, also for ProxyState
+    get: (state: ProxyState, key: string | symbol, receiver: CollectionTypes): any => {
+      const target = state.base;
       const isCollection = collectionMethods.includes(key) && key in target;
       if (!effect) {
-        return Reflect.get(isCollection ? mutableInstrumentations : target, key, receiver);
+        return Reflect.get(isCollection ? mutableInstrumentations : state, key, receiver);
       }
 
       const newGet = createGetter(effect);
@@ -233,13 +234,11 @@ function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<C
       const newForEach = createForEach(effect);
 
       const readonlyInstrumentations: Record<string, Function | number> = {
-        get(this: MapTypes, key: unknown) {
-          // @ts-ignore
+        get(this: ProxyState, key: unknown) {
           return newGet(this, key);
         },
-        //@ts-ignore
-        get size(this: IterableCollections) {
-          return newSize(this);
+        get size() {
+          return newSize((this as unknown) as ProxyState);
         },
         has: newHas,
         forEach: newForEach,
@@ -250,15 +249,16 @@ function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<C
         readonlyInstrumentations[method as string] = createIterableMethod(method, effect);
       });
 
-      return Reflect.get(isCollection ? readonlyInstrumentations : target, key, receiver);
+      return Reflect.get(isCollection ? readonlyInstrumentations : state, key, receiver);
+    },
+    getPrototypeOf(state: ProxyState) {
+      return Object.getPrototypeOf(state.base);
     }
   };
 }
 
 export const mutableCollectionHandles = createMutableCollectionHandles();
 
-export function createTrackCollectionHandles(
-  effect: ReactiveEffect
-): ProxyHandler<CollectionTypes> {
+export function createTrackCollectionHandles(effect: ReactiveEffect): ProxyHandler<ProxyState> {
   return createMutableCollectionHandles(effect);
 }

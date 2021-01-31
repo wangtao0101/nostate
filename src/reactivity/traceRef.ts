@@ -1,6 +1,6 @@
 import { ReactiveEffectType, effect, ReactiveEffect } from './effect';
 import { NOOP } from '../utils';
-import { reactive } from './reactive';
+import { toReactive } from './reactive';
 import { Ref, UnwrapRef } from './ref';
 import { ComputedRef } from './computed';
 
@@ -19,7 +19,7 @@ export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> 
     }
   });
 
-  const value = reactive(target, runner);
+  const value = toReactive(target, null, runner);
 
   return {
     _isTraceRef: true,

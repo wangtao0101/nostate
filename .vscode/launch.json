@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/scripts/jest.js",
       "stopOnEntry": false,
-      "args": ["${fileBasename}", "--runInBand", "--detectOpenHandles"],
+      "args": ["${relativeFile}", "--runInBand", "--detectOpenHandles"],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": null,
       "runtimeExecutable": null,
