@@ -17,6 +17,11 @@ const EMPTY_EFFECT: ReactiveEffect = {} as any;
 const collectionTypes = new Set<Function>([Set, Map, WeakMap, WeakSet]);
 const isObservableType = /*#__PURE__*/ makeMap('Object,Array,Map,Set,WeakMap,WeakSet');
 
+export interface ProxyState {
+  base: any;
+  parent: ProxyState | null;
+}
+
 const canObserve = (value: any): boolean => {
   return isObservableType(toRawType(value));
 };
@@ -51,6 +56,7 @@ function createReactiveObject(
   target: unknown,
   toProxy: WeakMap<any, WeakMap<any, any>>,
   toRaw: WeakMap<any, any>,
+  parent: ProxyState | null,
   effect?: ReactiveEffect
 ): any {
   if (!isObject(target)) {
@@ -86,7 +92,12 @@ function createReactiveObject(
     handlers = isCollection ? mutableCollectionHandles : mutableHandles;
   }
 
-  observed = new Proxy(target, handlers);
+  const state: ProxyState = {
+    base: target,
+    parent
+  };
+
+  observed = new Proxy(state, handlers);
 
   toRaw.set(observed, target);
   setProxy(target, observed, toProxy, effect);
@@ -98,15 +109,23 @@ function createReactiveObject(
   return observed;
 }
 
-export function reactive<T>(target: T, effect?: ReactiveEffect): T {
-  if (effect) {
-    return createReactiveObject(target, trackRawToReactive, trackReactiveToRaw, effect);
-  }
-  return createReactiveObject(target, rawToReactive, reactiveToRaw);
+export function reactive<T>(target: T): T {
+  return createReactiveObject(target, rawToReactive, reactiveToRaw, null);
 }
 
-export const toReactive = <T extends unknown>(value: T, effect?: ReactiveEffect): T =>
-  isObject(value) ? reactive(value, effect) : value;
+export const toReactive = <T extends unknown>(
+  target: T,
+  parent: ProxyState | null,
+  effect?: ReactiveEffect
+): T => {
+  if (!isObject(target)) {
+    return target;
+  }
+  if (effect) {
+    return createReactiveObject(target, trackRawToReactive, trackReactiveToRaw, parent, effect);
+  }
+  return createReactiveObject(target, rawToReactive, reactiveToRaw, parent);
+};
 
 export function isReactive(value: unknown): boolean {
   return reactiveToRaw.has(value) || trackReactiveToRaw.has(value);

@@ -1,4 +1,4 @@
-import { toRaw, toReactive } from './reactive';
+import { ProxyState, toRaw, toReactive } from './reactive';
 import { ReactiveEffect, track, ITERATE_KEY, trigger } from './effect';
 import { TrackOpTypes, TriggerOpTypes } from './operations';
 import { hasChanged, capitalize } from '../utils';
@@ -26,13 +26,14 @@ const collectionMethods: Array<string | symbol> = ([
 ] as Array<string | symbol>).concat(...iteratorMethods);
 
 function createGetter(effect?: ReactiveEffect) {
-  return function get(target: MapTypes, key: unknown): any {
-    target = toRaw(target);
+  return function get(state: ProxyState, key: unknown): any {
+    const target = state.base;
+    // target = toRaw(state);
     key = toRaw(key);
 
     track(target, TrackOpTypes.GET, key, effect);
 
-    return toReactive(getProto(target).get.call(target, key), effect);
+    return toReactive(getProto(target.base).get.call(target.base, key), target, effect);
   };
 }
 
@@ -58,7 +59,7 @@ function add(this: SetTypes, value: unknown): any {
     throw new Error(
       `Cannot add value: ${String(
         value
-      )}, nostate state is readonly except in coresponding reducer.`
+      )}, nostate state is readonly except in corresponding reducer.`
     );
   }
   value = toRaw(value);
@@ -75,7 +76,7 @@ function add(this: SetTypes, value: unknown): any {
 function set(this: MapTypes, key: unknown, value: unknown): void {
   if (VALUE_LOCKED) {
     throw new Error(
-      `Cannot set key: ${String(key)}, nostate state is readonly except in coresponding reducer.`
+      `Cannot set key: ${String(key)}, nostate state is readonly except in corresponding reducer.`
     );
   }
 
@@ -135,7 +136,12 @@ function createForEach(effect?: ReactiveEffect) {
     // 1. invoked with the reactive map as `this` and 3rd arg
     // 2. the value received should be a corresponding reactive/readonly.
     function wrappedCallback(value: unknown, key: unknown): any {
-      return callback.call(observed, toReactive(value, effect), toReactive(key, effect), observed);
+      return callback.call(
+        observed,
+        toReactive(value, null, effect),
+        toReactive(key, null, effect),
+        observed
+      );
     }
     return getProto(target).forEach.call(target, wrappedCallback, thisArg);
   };
@@ -157,8 +163,8 @@ function createIterableMethod(method: string | symbol, effect?: ReactiveEffect) 
           ? { value, done }
           : {
               value: isPair
-                ? [toReactive(value[0], effect), toReactive(value[1], effect)]
-                : toReactive(value, effect),
+                ? [toReactive(value[0], null, effect), toReactive(value[1], null, effect)]
+                : toReactive(value, null, effect),
               done
             };
       },
@@ -176,8 +182,10 @@ const size = createSize();
 
 const mutableInstrumentations: Record<string, Function | number> = {
   get(this: MapTypes, key: unknown) {
+    // @ts-ignore
     return get(this, key);
   },
+  //@ts-ignore
   get size(this: IterableCollections) {
     return size(this);
   },
@@ -199,7 +207,7 @@ function createReadonlyMethod(method: Function, type: TriggerOpTypes): Function 
     throw new Error(
       `${capitalize(
         type
-      )} operation ${key} failed: nostate state is readonly except in coresponding reducer.`
+      )} operation ${key} failed: nostate state is readonly except in corresponding reducer.`
     );
   };
 }
@@ -226,8 +234,10 @@ function createMutableCollectionHandles(effect?: ReactiveEffect): ProxyHandler<C
 
       const readonlyInstrumentations: Record<string, Function | number> = {
         get(this: MapTypes, key: unknown) {
+          // @ts-ignore
           return newGet(this, key);
         },
+        //@ts-ignore
         get size(this: IterableCollections) {
           return newSize(this);
         },

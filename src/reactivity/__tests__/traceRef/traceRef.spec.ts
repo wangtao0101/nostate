@@ -39,13 +39,13 @@ describe('reactivity/traceRef', () => {
       // @ts-ignore
       delete traceRef.value.foo;
     }).toThrowError(
-      /Cannot delete key: foo, nostate state is readonly except in coresponding reducer./
+      /Cannot delete key: foo, nostate state is readonly except in corresponding reducer./
     );
 
     expect(() => {
       traceRef.value.foo = 2;
     }).toThrowError(
-      /Cannot set key: foo, nostate state is readonly except in coresponding reducer./
+      /Cannot set key: foo, nostate state is readonly except in corresponding reducer./
     );
   });
 
@@ -126,7 +126,7 @@ describe('reactivity/traceRef', () => {
     expect(() => {
       observed1.foo = 2;
     }).toThrowError(
-      /Cannot set key: foo, nostate state is readonly except in coresponding reducer./
+      /Cannot set key: foo, nostate state is readonly except in corresponding reducer./
     );
   });
 

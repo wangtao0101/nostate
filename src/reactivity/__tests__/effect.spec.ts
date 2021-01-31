@@ -67,6 +67,7 @@ describe('reactivity/effect', () => {
     effect(() => (dummy = obj.prop));
 
     expect(dummy).toBe('value');
+    // @ts-ignore
     delete obj.prop;
     expect(dummy).toBe(undefined);
   });
@@ -77,6 +78,7 @@ describe('reactivity/effect', () => {
     effect(() => (dummy = 'prop' in obj));
 
     expect(dummy).toBe(true);
+    // @ts-ignore
     delete obj.prop;
     expect(dummy).toBe(false);
     obj.prop = 12;
@@ -91,6 +93,7 @@ describe('reactivity/effect', () => {
     effect(() => (dummy = counter.num));
 
     expect(dummy).toBe(0);
+    // @ts-ignore
     delete counter.num;
     expect(dummy).toBe(2);
     parentCounter.num = 4;
@@ -107,8 +110,10 @@ describe('reactivity/effect', () => {
     effect(() => (dummy = 'num' in counter));
 
     expect(dummy).toBe(true);
+    // @ts-ignore
     delete counter.num;
     expect(dummy).toBe(true);
+    // @ts-ignore
     delete parentCounter.num;
     expect(dummy).toBe(false);
     counter.num = 3;
@@ -124,7 +129,7 @@ describe('reactivity/effect', () => {
       },
       get prop() {
         return hiddenValue;
-      },
+      }
     });
     Object.setPrototypeOf(obj, parent);
     effect(() => (dummy = obj.prop));
@@ -220,6 +225,7 @@ describe('reactivity/effect', () => {
     expect(hasDummy).toBe(true);
     obj[key] = 'newValue';
     expect(dummy).toBe('newValue');
+    // @ts-ignore
     delete obj[key];
     expect(dummy).toBe(undefined);
     expect(hasDummy).toBe(false);
@@ -256,7 +262,7 @@ describe('reactivity/effect', () => {
       a: 1,
       get b() {
         return this.a;
-      },
+      }
     });
 
     let dummy;
@@ -271,7 +277,7 @@ describe('reactivity/effect', () => {
       a: 1,
       b() {
         return this.a;
-      },
+      }
     });
 
     let dummy;
@@ -328,7 +334,7 @@ describe('reactivity/effect', () => {
       },
       get prop() {
         return hiddenValue;
-      },
+      }
     });
     Object.setPrototypeOf(obj, parent);
     effect(() => (dummy = obj.prop));
@@ -569,7 +575,7 @@ describe('reactivity/effect', () => {
       () => {
         dummy = obj.foo;
       },
-      { scheduler },
+      { scheduler }
     );
     expect(scheduler).not.toHaveBeenCalled();
     expect(dummy).toBe(1);
@@ -729,7 +735,7 @@ describe('reactivity/effect', () => {
 
   it('should not be trigger when the value and the old value both are NaN', () => {
     const obj = reactive({
-      foo: NaN,
+      foo: NaN
     });
     const fnSpy = jest.fn(() => obj.foo);
     effect(fnSpy);

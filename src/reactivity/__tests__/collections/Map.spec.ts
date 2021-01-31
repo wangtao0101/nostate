@@ -8,7 +8,7 @@ describe('reactivity/collections', () => {
       expect(() => {
         observed.set('foo', 1);
       }).toThrowError(
-        /Cannot set key: foo, nostate state is readonly except in coresponding reducer./
+        /Cannot set key: foo, nostate state is readonly except in corresponding reducer./
       );
     });
   });

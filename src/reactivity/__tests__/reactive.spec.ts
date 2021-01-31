@@ -41,13 +41,13 @@ describe('reactivity/reactive', () => {
     expect(() => {
       observed.bar = 1;
     }).toThrowError(
-      /Cannot set key: bar, nostate state is readonly except in coresponding reducer./
+      /Cannot set key: bar, nostate state is readonly except in corresponding reducer./
     );
 
     expect(() => {
       delete observed.foo;
     }).toThrowError(
-      /Cannot delete key: foo, nostate state is readonly except in coresponding reducer./
+      /Cannot delete key: foo, nostate state is readonly except in corresponding reducer./
     );
   });
 
