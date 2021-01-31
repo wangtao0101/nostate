@@ -159,4 +159,24 @@ describe('reactivity/traceRef', () => {
     const traceRef3 = reactiveTrace(original, fnSpy);
     expect(traceRef.value === traceRef3.value).toBe(false);
   });
+
+  it('should get new trace reactive obj after push new value for array', () => {
+    const original = [{ foo: 1 }, 1];
+    const observed = reactive(original);
+    const fnSpy = jest.fn(() => {});
+
+    const traceRef = reactiveTrace(original, fnSpy);
+
+    const traceRef1 = reactiveTrace(original, fnSpy);
+    expect(traceRef.value === traceRef1.value).toBe(true);
+
+    observed.push(1);
+    const traceRef2 = reactiveTrace(original, fnSpy);
+    expect(traceRef.value === traceRef2.value).toBe(false);
+
+    // @ts-ignore
+    observed[0].foo++;
+    const traceRef3 = reactiveTrace(original, fnSpy);
+    expect(traceRef.value === traceRef3.value).toBe(false);
+  });
 });

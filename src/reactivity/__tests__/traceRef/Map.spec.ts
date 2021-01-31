@@ -202,7 +202,7 @@ describe('reactivity/traceRef', () => {
 
       const cal = () => {
         let dummy = 0;
-        traceRef.value.forEach(value => {
+        traceRef.value.forEach((value) => {
           expect(isReactive(value)).toBe(true);
           dummy += value.foo;
         });
@@ -289,6 +289,27 @@ describe('reactivity/traceRef', () => {
       expect(cal()).toBe(2);
 
       expect(fnSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should get new trace reactive obj after push new value for Map', () => {
+      const original = new Map([['key', { foo: 1 }]]);
+      const observed = reactive(original);
+      const fnSpy = jest.fn(() => {});
+
+      const traceRef = reactiveTrace(original, fnSpy);
+
+      const traceRef1 = reactiveTrace(original, fnSpy);
+      expect(traceRef.value === traceRef1.value).toBe(true);
+
+      observed.set('key1', { foo: 2 });
+      const traceRef2 = reactiveTrace(original, fnSpy);
+      expect(traceRef.value === traceRef2.value).toBe(false);
+
+      const observedFoo = observed.get('key');
+      observedFoo!.foo++;
+      const traceRef3 = reactiveTrace(original, fnSpy);
+      expect(traceRef.value === traceRef3.value).toBe(false);
+      expect(observedFoo?.foo).toBe(2);
     });
   });
 });
