@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import { useSetup } from '../useSetup';
@@ -8,15 +8,19 @@ import { reactive, computed } from '../../reactivity';
 describe('core/component', () => {
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { observed, increase } = useSetup(() => {
-        const observed = reactive({ foo: 1 });
-        return {
-          observed,
-          increase: reducer(() => {
-            observed.foo += 1;
-          })
-        };
-      });
+      const { observed, increase } = useSetup(
+        (a: number, b: number) => {
+          const observed = reactive({ foo: 1 });
+          return {
+            observed,
+            increase: reducer(() => {
+              observed.foo += a + b;
+            }),
+          };
+        },
+        0.5,
+        0.5
+      );
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -41,7 +45,7 @@ describe('core/component', () => {
           observed: observed.foo,
           increase: reducer(() => {
             observed.foo.bar += 1;
-          })
+          }),
         };
       });
 
@@ -69,7 +73,7 @@ describe('core/component', () => {
           cValue,
           increase: reducer(() => {
             observed.foo += 1;
-          })
+          }),
         };
       });
 
@@ -99,7 +103,7 @@ describe('core/component', () => {
           increase: reducer(() => {
             observed.foo += 1;
             observed.foo += 1;
-          })
+          }),
         };
       });
 
@@ -136,11 +140,40 @@ describe('core/component', () => {
           observed,
           increase: reducer(() => {
             observed.foo += 1;
-          })
+          }),
         };
       });
 
       return <Child observed={observed} increase={increase} />;
+    };
+
+    const { getByTestId, queryByText } = render(<Parent />);
+    expect(queryByText('1')).not.toBeNull();
+
+    const node = getByTestId('id');
+    fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
+    expect(queryByText('2')).not.toBeNull();
+  });
+
+  it('should trigger useMemo when nested value change', () => {
+    const Parent = () => {
+      const { observed, increase } = useSetup(() => {
+        const observed = reactive({ foo: { foo: 1 } });
+        return {
+          observed,
+          increase: reducer(() => {
+            observed.foo.foo += 1;
+          }),
+        };
+      });
+
+      const v = useMemo(() => observed.foo.foo, [observed.foo]);
+
+      return (
+        <div data-testid="id" onClick={() => increase()}>
+          {v}
+        </div>
+      );
     };
 
     const { getByTestId, queryByText } = render(<Parent />);

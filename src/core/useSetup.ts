@@ -5,8 +5,11 @@ import { ISetup, bindSetup } from './create';
 
 export type ISetupReturn<T> = { [P in keyof T]: T[P] extends Ref ? TraceRef<T[P]> : T[P] };
 
-export function useSetup<P extends Record<string, any>>(setup: ISetup<P>): ISetupReturn<P> {
-  const [, forceRender] = useReducer(s => s + 1, 0);
+export function useSetup<P extends Record<string, any>, T extends any[]>(
+  setup: ISetup<P, T>,
+  ...args: T
+): ISetupReturn<P> {
+  const [, forceRender] = useReducer((s) => s + 1, 0);
 
   const effectsRef = useRef<Set<ReactiveEffect>>(new Set());
   const bindsRef = useRef<any>({});
@@ -22,7 +25,7 @@ export function useSetup<P extends Record<string, any>>(setup: ISetup<P>): ISetu
       bindsRef.current = meta.bindsMap;
       meta.tap(scheduler);
     } else {
-      const { bindsMap, effectsSet } = bindSetup(setup as ISetup<P>, scheduler);
+      const { bindsMap, effectsSet } = bindSetup(setup as ISetup<P, T>, scheduler, ...args);
       bindsRef.current = bindsMap;
       effectsRef.current = effectsSet;
     }

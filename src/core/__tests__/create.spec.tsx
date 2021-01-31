@@ -8,8 +8,8 @@ import { create, listenersMap } from '../create';
 
 describe('core/setup global setup', () => {
   it('should rerender when change reactive value when use global nostate', () => {
-    const setup = create(() => {
-      const observed = reactive({ foo: 1 });
+    const setup = create((a: number) => {
+      const observed = reactive({ foo: a });
       return {
         observed,
         increase: reducer(() => {
@@ -17,9 +17,9 @@ describe('core/setup global setup', () => {
           observed.foo += 1;
           observed.foo -= 1;
           observed.foo += 1;
-        })
+        }),
       };
-    });
+    }, 1);
 
     const Example = () => {
       const { observed, increase } = useSetup(setup);
@@ -43,7 +43,7 @@ describe('core/setup global setup', () => {
     const setupFn = () => {
       const observed = reactive({ foo: 1 });
       return {
-        observed
+        observed,
       };
     };
 
@@ -70,7 +70,7 @@ describe('core/setup global setup', () => {
         observed,
         increase: reducer(() => {
           observed.foo += 1;
-        })
+        }),
       };
     });
 
@@ -115,7 +115,7 @@ describe('core/setup global setup', () => {
         observed,
         increase: reducer(() => {
           observed.foo += 1;
-        })
+        }),
       };
     });
 

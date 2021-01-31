@@ -157,7 +157,7 @@ describe('reactivity/traceRef', () => {
 
     observed.a.foo++;
     const traceRef3 = reactiveTrace(original, fnSpy);
-    expect(traceRef.value === traceRef3.value).toBe(false);
+    expect(traceRef2.value === traceRef3.value).toBe(false);
   });
 
   it('should get new trace reactive obj after push new value for array', () => {
@@ -177,6 +177,6 @@ describe('reactivity/traceRef', () => {
     // @ts-ignore
     observed[0].foo++;
     const traceRef3 = reactiveTrace(original, fnSpy);
-    expect(traceRef.value === traceRef3.value).toBe(false);
+    expect(traceRef2.value === traceRef3.value).toBe(false);
   });
 });

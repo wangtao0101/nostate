@@ -4,23 +4,23 @@ import {
   isReactive,
   reactiveTrace,
   toRaw,
-  ReactiveEffect
+  ReactiveEffect,
 } from '../reactivity';
 
 export const listenersMap: Record<any, Function[]> = {} as any;
 
-export interface Type<T> extends Function {
-  new (...args: any[]): T;
-}
+export type ISetup<P extends Record<string, any>, T extends any[]> = (..._args: T) => P;
 
-export type ISetup<P extends Record<string, any>> = () => P;
-
-export function bindSetup<P extends Record<string, any>>(fn: ISetup<P>, call: () => void) {
-  const binds = fn();
+export function bindSetup<P extends Record<string, any>, T extends any[]>(
+  fn: ISetup<P, T>,
+  call: () => void,
+  ...args: T
+) {
+  const binds = fn(...args);
   const bindsMap: Record<string, any> = {};
   const effectsSet: Set<ReactiveEffect> = new Set();
 
-  Object.keys(binds).map(bindKey => {
+  Object.keys(binds).map((bindKey) => {
     const bind = binds[bindKey];
     if (isRef(bind)) {
       const ref = computedTrace(bind as any, call);
@@ -37,17 +37,20 @@ export function bindSetup<P extends Record<string, any>>(fn: ISetup<P>, call: ()
 
   return {
     bindsMap,
-    effectsSet
+    effectsSet,
   };
 }
 
-export function create<P extends Record<string, any>>(fn: ISetup<P>): ISetup<P> {
+export function create<P extends Record<string, any>, T extends any[]>(
+  fn: ISetup<P, T>,
+  ...args: T
+): ISetup<P, []> {
   const emptyFn = () => {};
 
   listenersMap[emptyFn as any] = [];
 
-  const call = function() {
-    listenersMap[emptyFn as any].map(lis => {
+  const call = function () {
+    listenersMap[emptyFn as any].map((lis) => {
       lis();
     });
   };
@@ -55,19 +58,19 @@ export function create<P extends Record<string, any>>(fn: ISetup<P>): ISetup<P> 
   const tap = (listener: any) => listenersMap[emptyFn as any].push(listener);
   const untap = (listener: any) => {
     const listeners = listenersMap[emptyFn as any];
-    const index = listeners.findIndex(l => l === listener);
+    const index = listeners.findIndex((l) => l === listener);
     if (index !== -1) {
       listeners.splice(index, 1);
     }
   };
 
-  const { bindsMap, effectsSet } = bindSetup(fn, call);
+  const { bindsMap, effectsSet } = bindSetup(fn, call, ...args);
 
   (emptyFn as any).meta = {
     bindsMap,
     effectsSet,
     tap,
-    untap
+    untap,
   };
 
   return emptyFn as any;
