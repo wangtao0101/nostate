@@ -1,5 +1,6 @@
 import { EMPTY_OBJ, isArray } from '../utils';
 import { TriggerOpTypes, TrackOpTypes } from './operations';
+import { ProxyState, trackRawToReactive } from './reactive';
 
 export const ITERATE_KEY = Symbol('iterate');
 
@@ -99,11 +100,19 @@ function cleanup(effect: ReactiveEffect): void {
   }
 }
 
-export function trigger(target: object, type: TriggerOpTypes, key?: unknown): void {
+export function trigger(state: ProxyState, type: TriggerOpTypes, key?: unknown): void {
+  const target = state.base;
   const depsMap = targetMap.get(target);
   if (depsMap === void 0) {
     // never been tracked
     return;
+  }
+
+  // clear trace reactive object
+  let parent = state;
+  while (parent != null) {
+    trackRawToReactive.delete(parent.base);
+    parent = parent.parent!;
   }
 
   const effects = new Set<ReactiveEffect>();

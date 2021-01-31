@@ -81,9 +81,9 @@ function createMutableHandles(): ProxyHandler<object> {
       if (target === toRaw(receiver)) {
         result = Reflect.set(target, key, rawValue);
         if (!hadKey) {
-          trigger(target, TriggerOpTypes.ADD, key);
+          trigger(state, TriggerOpTypes.ADD, key);
         } else if (hasChanged(value, oldValue)) {
-          trigger(target, TriggerOpTypes.SET, key);
+          trigger(state, TriggerOpTypes.SET, key);
         }
       } else {
         result = Reflect.set(target, key, rawValue, receiver);
@@ -102,7 +102,7 @@ function createMutableHandles(): ProxyHandler<object> {
       const hadKey = hasOwn(target, key);
       const result = Reflect.deleteProperty(target, key);
       if (result && hadKey) {
-        trigger(target, TriggerOpTypes.DELETE, key);
+        trigger(state, TriggerOpTypes.DELETE, key);
       }
       return result;
     },

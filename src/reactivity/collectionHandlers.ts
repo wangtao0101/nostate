@@ -67,7 +67,7 @@ function add(this: ProxyState, value: unknown): any {
   const hadKey = proto.has.call(target, value);
   const result = proto.add.call(target, value);
   if (!hadKey) {
-    trigger(target, TriggerOpTypes.ADD, value);
+    trigger(this, TriggerOpTypes.ADD, value);
   }
   return result;
 }
@@ -87,9 +87,9 @@ function set(this: ProxyState, key: unknown, value: unknown): void {
   const result = proto.set.call(target, key, value);
 
   if (!hadKey) {
-    trigger(target, TriggerOpTypes.ADD, key);
+    trigger(this, TriggerOpTypes.ADD, key);
   } else if (hasChanged(value, oldValue)) {
-    trigger(target, TriggerOpTypes.SET, key);
+    trigger(this, TriggerOpTypes.SET, key);
   }
 
   return result;
@@ -107,7 +107,7 @@ function deleteEntry(this: ProxyState, key: unknown): void {
   // forward the operation before queueing reactions
   const result = proto.delete.call(target, key);
   if (hadKey) {
-    trigger(target, TriggerOpTypes.DELETE, key);
+    trigger(this, TriggerOpTypes.DELETE, key);
   }
   return result;
 }
@@ -118,7 +118,7 @@ function clear(this: ProxyState): void {
   // forward the operation before queueing reactions
   const result = getProto(target).clear.call(target);
   if (hadItems) {
-    trigger(target, TriggerOpTypes.CLEAR, void 0);
+    trigger(this, TriggerOpTypes.CLEAR, void 0);
   }
   return result;
 }

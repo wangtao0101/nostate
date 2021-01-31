@@ -9,7 +9,7 @@ const effectToHandle = new WeakMap<any, any>();
 const rawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const reactiveToRaw = new WeakMap<any, any>();
 
-const trackRawToReactive = new WeakMap<any, WeakMap<any, any>>();
+export const trackRawToReactive = new WeakMap<any, WeakMap<any, any>>();
 const trackReactiveToRaw = new WeakMap<any, any>();
 
 const EMPTY_EFFECT: ReactiveEffect = {} as any;

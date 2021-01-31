@@ -9,15 +9,22 @@ export interface TraceRef<T = any> extends Ref<T> {
   readonly value: UnwrapRef<T>;
 }
 
+const schedulerMap = new WeakMap<any, any>();
+
 export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> {
-  const runner = effect(NOOP, {
-    lazy: true,
-    // mark effect as trace effect so that it gets low priority during trigger
-    type: ReactiveEffectType.TRACE,
-    scheduler: () => {
-      scheduler();
-    }
-  });
+  let runner = schedulerMap.get(scheduler);
+
+  if (runner == null) {
+    runner = effect(NOOP, {
+      lazy: true,
+      // mark effect as trace effect so that it gets low priority during trigger
+      type: ReactiveEffectType.TRACE,
+      scheduler: () => {
+        scheduler();
+      }
+    });
+    schedulerMap.set(scheduler, runner);
+  }
 
   const value = toReactive(target, null, runner);
 
