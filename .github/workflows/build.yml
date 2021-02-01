@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node: ['12', '10']
+        node: ['14']
     name: test/node ${{ matrix.node }}/${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
 
@@ -41,7 +41,7 @@ jobs:
 
       - uses: actions/setup-node@master
         with:
-          node-version: '12'
+          node-version: '14'
 
       - run: npm install
       - run: npm run coverage
