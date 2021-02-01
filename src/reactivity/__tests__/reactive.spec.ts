@@ -34,6 +34,20 @@ describe('reactivity/reactive', () => {
     expect(Object.keys(observed)).toEqual(['0']);
   });
 
+  test('Array.isArray', () => {
+    const original = [{ foo: 1 }];
+    const observed = reactive(original);
+    expect(Array.isArray(observed)).toBe(true);
+  });
+
+  test('object rest props', () => {
+    const original = { foo: 1 };
+    const observed = reactive(original);
+    expect({ ...observed }).toStrictEqual({ foo: 1 });
+
+    expect(Object.assign({}, observed)).toStrictEqual({ foo: 1 });
+  });
+
   test('should not set or delete value if object locked', () => {
     const original: any = { foo: 1 };
     const observed = reactive(original);
@@ -63,9 +77,9 @@ describe('reactivity/reactive', () => {
   test('nested reactives', () => {
     const original = {
       nested: {
-        foo: 1
+        foo: 1,
       },
-      array: [{ bar: 2 }]
+      array: [{ bar: 2 }],
     };
     const observed = reactive(original);
     expect(isReactive(observed.nested)).toBe(true);

@@ -142,7 +142,7 @@ describe('reactivity/traceRef', () => {
   });
 
   it('should get new trace reactive obj after set new value', () => {
-    const original = { foo: 1, a: { foo: 1 } };
+    const original = { foo: 1, a: { foo: 1 }, b: [1] };
     const observed = reactive(original);
     const fnSpy = jest.fn(() => {});
 
@@ -158,6 +158,10 @@ describe('reactivity/traceRef', () => {
     observed.a.foo++;
     const traceRef3 = reactiveTrace(original, fnSpy);
     expect(traceRef2.value === traceRef3.value).toBe(false);
+
+    observed.b.push(2);
+    const traceRef4 = reactiveTrace(original, fnSpy);
+    expect(traceRef3.value === traceRef4.value).toBe(false);
   });
 
   it('should get new trace reactive obj after push new value for array', () => {

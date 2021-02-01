@@ -6,12 +6,15 @@ import { TrackOpTypes, TriggerOpTypes } from './operations';
 
 const builtInSymbols = new Set(
   Object.getOwnPropertyNames(Symbol)
-    .map(key => (Symbol as any)[key])
+    .map((key) => (Symbol as any)[key])
     .filter(isSymbol)
 );
 
 function createGetter(effect?: ReactiveEffect) {
   return function get(state: ProxyState, key: string | symbol, receiver: object): any {
+    if (Array.isArray(state)) {
+      state = state[0];
+    }
     const target = state.base;
     const res = Reflect.get(target, key, receiver);
     if (isSymbol(key) && builtInSymbols.has(key)) {
@@ -24,6 +27,9 @@ function createGetter(effect?: ReactiveEffect) {
 
 function createHas(effect?: ReactiveEffect) {
   return function has(state: ProxyState, key: string | symbol): boolean {
+    if (Array.isArray(state)) {
+      state = state[0];
+    }
     const target = state.base;
     const result = Reflect.has(target, key);
     track(target, TrackOpTypes.HAS, key, effect);
@@ -33,6 +39,9 @@ function createHas(effect?: ReactiveEffect) {
 
 function createOwnKeys(effect?: ReactiveEffect) {
   return function ownKeys(state: ProxyState): (string | number | symbol)[] {
+    if (Array.isArray(state)) {
+      state = state[0];
+    }
     const target = state.base;
     track(target, TrackOpTypes.ITERATE, ITERATE_KEY, effect);
     return Reflect.ownKeys(target);
@@ -42,6 +51,35 @@ function createOwnKeys(effect?: ReactiveEffect) {
 const get = createGetter();
 const has = createHas();
 const ownKeys = createOwnKeys();
+
+const getOwnPropertyDescriptor = (state: ProxyState, prop: any) => {
+  if (Array.isArray(state)) {
+    state = state[0];
+  }
+  const target = state.base;
+  const desc = Reflect.getOwnPropertyDescriptor(target, prop);
+  if (!desc) return desc;
+  return {
+    writable: true,
+    configurable: prop !== 'length',
+    enumerable: desc.enumerable,
+    value: target[prop],
+  };
+};
+
+const getPrototypeOf = (state: ProxyState) => {
+  if (Array.isArray(state)) {
+    state = state[0];
+  }
+  return Object.getPrototypeOf(state.base);
+};
+
+const setPrototypeOf = (state: ProxyState, prototype: any) => {
+  if (Array.isArray(state)) {
+    state = state[0];
+  }
+  return Object.setPrototypeOf(state.base, prototype);
+};
 
 function lockSetter(
   _target: object,
@@ -71,6 +109,9 @@ function createMutableHandles(): ProxyHandler<object> {
           )}, nostate state is readonly except in corresponding reducer.`
         );
       }
+      if (Array.isArray(state)) {
+        state = state[0];
+      }
       const target = state.base;
       const rawValue = toRaw(value);
       const oldValue = (target as any)[key];
@@ -98,6 +139,9 @@ function createMutableHandles(): ProxyHandler<object> {
           )}, nostate state is readonly except in corresponding reducer.`
         );
       }
+      if (Array.isArray(state)) {
+        state = state[0];
+      }
       const target = state.base;
       const hadKey = hasOwn(target, key);
       const result = Reflect.deleteProperty(target, key);
@@ -106,25 +150,11 @@ function createMutableHandles(): ProxyHandler<object> {
       }
       return result;
     },
-    getOwnPropertyDescriptor(state: ProxyState, prop) {
-      const target = state.base;
-      const desc = Reflect.getOwnPropertyDescriptor(target, prop);
-      if (!desc) return desc;
-      return {
-        writable: true,
-        configurable: true,
-        enumerable: desc.enumerable,
-        value: target[prop]
-      };
-    },
-    getPrototypeOf(state: ProxyState) {
-      return Object.getPrototypeOf(state.base);
-    },
-    setPrototypeOf(state: ProxyState, prototype: any) {
-      return Object.setPrototypeOf(state.base, prototype);
-    },
+    getOwnPropertyDescriptor,
+    getPrototypeOf,
+    setPrototypeOf,
     has,
-    ownKeys
+    ownKeys,
   };
 }
 
@@ -135,7 +165,10 @@ export function createTrackHandles(effect: ReactiveEffect): ProxyHandler<object>
     get: createGetter(effect),
     set: lockSetter,
     deleteProperty: lockDeleteProperty,
+    getOwnPropertyDescriptor,
+    getPrototypeOf,
+    setPrototypeOf,
     has: createHas(effect),
-    ownKeys: createOwnKeys(effect)
+    ownKeys: createOwnKeys(effect),
   };
 }

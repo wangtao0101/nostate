@@ -92,10 +92,14 @@ function createReactiveObject(
     handlers = isCollection ? mutableCollectionHandles : mutableHandles;
   }
 
-  const state: ProxyState = {
+  let state: ProxyState = {
     base: target,
-    parent
+    parent,
   };
+
+  if (Array.isArray(target)) {
+    state = [state] as any;
+  }
 
   observed = new Proxy(state, handlers);
 

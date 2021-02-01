@@ -7,12 +7,12 @@ export const ITERATE_KEY = Symbol('iterate');
 export enum ReactiveEffectType {
   COMPUTED,
   EFFECT,
-  TRACE
+  TRACE,
 }
 
 export interface ReactiveEffectOptions {
   lazy?: boolean;
-  scheduler?: (run: Function) => void;
+  scheduler?: (_run: Function) => void;
   type?: ReactiveEffectType;
 }
 
@@ -101,6 +101,9 @@ function cleanup(effect: ReactiveEffect): void {
 }
 
 export function trigger(state: ProxyState, type: TriggerOpTypes, key?: unknown): void {
+  if (Array.isArray(state)) {
+    state = state[0];
+  }
   const target = state.base;
   const depsMap = targetMap.get(target);
   if (depsMap === void 0) {
@@ -111,6 +114,9 @@ export function trigger(state: ProxyState, type: TriggerOpTypes, key?: unknown):
   // clear trace reactive object
   let parent = state;
   while (parent != null) {
+    if (Array.isArray(parent)) {
+      parent = parent[0];
+    }
     trackRawToReactive.delete(parent.base);
     parent = parent.parent!;
   }
@@ -121,7 +127,7 @@ export function trigger(state: ProxyState, type: TriggerOpTypes, key?: unknown):
 
   if (type === TriggerOpTypes.CLEAR) {
     // collection being cleared, trigger all effects for target
-    depsMap.forEach(dep => {
+    depsMap.forEach((dep) => {
       addRunners(effects, computedRunners, stateRunners, dep);
     });
   } else {
@@ -186,7 +192,7 @@ function addRunners(
   sourcesToAdd: Set<ReactiveEffect> | undefined
 ): void {
   if (sourcesToAdd !== void 0) {
-    sourcesToAdd.forEach(source => {
+    sourcesToAdd.forEach((source) => {
       if (source.options.type === ReactiveEffectType.COMPUTED) {
         computedRunners.add(source);
       } else if (source.options.type === ReactiveEffectType.TRACE) {
