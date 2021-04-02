@@ -1,3 +1,4 @@
 export { reducer } from './reducer';
-export { useSetup } from './useSetup';
-export { create } from './create';
+export { useSetupBinds } from './useSetupBinds';
+export { useCreateSetup } from './useCreateSetup';
+export { createSetup } from './createSetup';

@@ -1,18 +1,18 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import { useSetup } from '../useSetup';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
+import { useCreateSetup } from '../useCreateSetup';
 
-describe('core/useSetup', () => {
+describe('core/useCreateSetup', () => {
   it('should update reactive value', () => {
     const { result } = renderHook(() =>
-      useSetup(() => {
+      useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
           increase: reducer(() => {
             observed.foo += 1;
-          })
+          }),
         };
       })
     );
@@ -30,7 +30,7 @@ describe('core/useSetup', () => {
 
   it('should update computed value', () => {
     const { result } = renderHook(() =>
-      useSetup(() => {
+      useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
 
         const cValue = computed(() => observed.foo + 1);
@@ -38,7 +38,7 @@ describe('core/useSetup', () => {
           cValue,
           increase: reducer(() => {
             observed.foo += 1;
-          })
+          }),
         };
       })
     );

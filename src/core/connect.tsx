@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useReducer, useCallback, useRef, useMemo, useLayoutEffect } from 'react';
 import { forwardComponent } from '../utils/forwardComponent';
 import { ReactiveEffect, stop } from '../reactivity';
-import { bindSetup } from './create';
+import { createBindsMap, SetupBinds } from './createSetup';
 
 interface ExtraOptions {
   forwardRef?: any;
@@ -14,18 +14,19 @@ interface InferableComponentEnhancerWithProps<TInjectedProps, TNeedsProps> {
   > & { WrappedComponent: React.ComponentType<P> };
 }
 
-type getReturnType<P> = P extends () => any ? ReturnType<P> : P;
-type MapToSetup<T> = { [P in keyof T]: getReturnType<T[P]> };
+export type getBindType<P, T extends Record<string, any>> = P extends SetupBinds<T> ? T : P;
 
-export function connect<P extends () => any, T extends Record<string, P>>(
+type MapToSetup<T, Q> = { [P in keyof T]: getBindType<T[P], Q> };
+
+export function connect<P extends Record<string, any>, T extends Record<string, SetupBinds<P>>>(
   mapSetupToProps: T,
   extraOptions: ExtraOptions = {}
-): InferableComponentEnhancerWithProps<MapToSetup<T>, {}> {
+): InferableComponentEnhancerWithProps<MapToSetup<T, P>, Record<string, never>> {
   return function wrapWithConnect(WrappedComponent: any) {
     function ConnectFunction(props: any) {
       const { forwardedRef, ...rest } = props;
 
-      const [, forceRender] = useReducer(s => s + 1, 0);
+      const [, forceRender] = useReducer((s) => s + 1, 0);
 
       const effectsRef = useRef<Array<Set<ReactiveEffect>>>([]);
       const bindsRef = useRef<any>({});
@@ -35,18 +36,12 @@ export function connect<P extends () => any, T extends Record<string, P>>(
       }, []);
 
       useMemo(() => {
-        Object.keys(mapSetupToProps).map(key => {
-          const setup = mapSetupToProps[key];
-          const meta: any = (setup as any).meta;
-          if (meta) {
-            bindsRef.current[key] = meta.bindsMap;
-            effectsRef.current.push(new Set());
-            meta.tap(scheduler);
-          } else {
-            const { bindsMap, effectsSet } = bindSetup(setup as any, scheduler);
-            bindsRef.current[key] = bindsMap;
-            effectsRef.current.push(effectsSet);
-          }
+        Object.keys(mapSetupToProps).map((key) => {
+          const setupBinds = mapSetupToProps[key];
+
+          const { bindsMap, effectsSet } = createBindsMap(setupBinds, scheduler);
+          bindsRef.current[key] = bindsMap;
+          effectsRef.current.push(effectsSet);
         });
       }, []);
 

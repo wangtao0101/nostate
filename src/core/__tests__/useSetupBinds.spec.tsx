@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useSetup } from '../useSetup';
+import { useSetupBinds } from '../useSetupBinds';
 import { reducer } from '../reducer';
 import { reactive } from '../../reactivity';
-import { create, listenersMap } from '../create';
+import { createSetup } from '../createSetup';
 
-describe('core/setup global setup', () => {
+describe('core/useSetupBinds', () => {
   it('should rerender when change reactive value when use global nostate', () => {
-    const setup = create((a: number) => {
+    const setup = createSetup((a: number) => {
       const observed = reactive({ foo: a });
       return {
         observed,
@@ -22,7 +22,7 @@ describe('core/setup global setup', () => {
     }, 1);
 
     const Example = () => {
-      const { observed, increase } = useSetup(setup);
+      const { observed, increase } = useSetupBinds(setup);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -38,75 +38,52 @@ describe('core/setup global setup', () => {
     expect(queryByText('2')).not.toBeNull();
   });
 
-  // it('should rerender when change reactive value when use global nostate', () => {
-  //   const setup = create((a: number) => {
-  //     const observed = reactive({ foo: a });
-  //     return {
-  //       observed,
-  //       increase: reducer(() => {
-  //         // triger mutiple action
-  //         observed.foo += 1;
-  //         observed.foo -= 1;
-  //         observed.foo += 1;
-  //       }),
-  //     };
-  //   }, 1);
-
-  //   const Example = () => {
-  //     const { observed, increase } = useSetup(setup);
-
-  //     return (
-  //       <div data-testid="id" onClick={() => increase()}>
-  //         {observed.foo}
-  //       </div>
-  //     );
-  //   };
-
-  //   const Example1 = () => {
-  //     useSetup(setup);
-  //     console.log('adfasdfad')
-  //     return <div />;
-  //   };
-
-  //   const { getByTestId, queryByText } = render(
-  //     <div>
-  //       <Example />
-  //       <Example1 />
-  //     </div>
-  //   );
-  //   expect(queryByText('1')).not.toBeNull();
-  //   console.log('afdasdfcccccccc')
-  //   const node = getByTestId('id');
-  //   fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
-  //   expect(queryByText('2')).not.toBeNull();
-  // });
-
-  it('should untap listener when component destroy', () => {
-    const setupFn = () => {
-      const observed = reactive({ foo: 1 });
+  it('should rerender target component', () => {
+    const setup = createSetup((a: number) => {
+      const observed = reactive({ foo: a });
       return {
         observed,
+        increase: reducer(() => {
+          observed.foo += 1;
+        }),
       };
-    };
+    }, 1);
 
-    const setup = create(setupFn);
+    const fn1 = jest.fn();
+    const fn2 = jest.fn();
 
     const Example = () => {
-      const { observed } = useSetup(setup);
-
-      return <div data-testid="id">{observed.foo}</div>;
+      const { observed, increase } = useSetupBinds(setup);
+      fn1();
+      return (
+        <div data-testid="id" onClick={() => increase()}>
+          {observed.foo}
+        </div>
+      );
     };
 
-    const { queryByText, unmount } = render(<Example />);
-    expect(queryByText('1')).not.toBeNull();
+    const Example1 = () => {
+      fn2();
+      useSetupBinds(setup);
+      return <div />;
+    };
 
-    expect(listenersMap.get(setup as any)!.length).toBe(1);
-    unmount();
-    expect(listenersMap.get(setup as any)!.length).toBe(0);
+    const { getByTestId } = render(
+      <div>
+        <Example />
+        <Example1 />
+      </div>
+    );
+    const node = getByTestId('id');
+    expect(fn1).toBeCalledTimes(1);
+    expect(fn2).toBeCalledTimes(1);
+    fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
+    expect(fn1).toBeCalledTimes(2);
+    expect(fn2).toBeCalledTimes(1);
   });
 
   it('should rerender all instance when change reactive value when use global nostate', () => {
-    const setup = create(() => {
+    const setup = createSetup(() => {
       const observed = reactive({ foo: 1 });
       return {
         observed,
@@ -117,7 +94,7 @@ describe('core/setup global setup', () => {
     });
 
     const Example1 = () => {
-      const { observed, increase } = useSetup(setup);
+      const { observed, increase } = useSetupBinds(setup);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -127,7 +104,7 @@ describe('core/setup global setup', () => {
     };
 
     const Example2 = () => {
-      const { observed } = useSetup(setup);
+      const { observed } = useSetupBinds(setup);
 
       return <div>{observed.foo + 10}</div>;
     };
@@ -151,7 +128,7 @@ describe('core/setup global setup', () => {
     let shouldCollect = false;
     const collect: number[] = [];
 
-    const setup = create(() => {
+    const setup = createSetup(() => {
       const observed = reactive({ foo: 1 });
       return {
         observed,
@@ -162,7 +139,7 @@ describe('core/setup global setup', () => {
     });
 
     const Child = () => {
-      const { observed, increase } = useSetup(setup);
+      const { observed, increase } = useSetupBinds(setup);
 
       if (shouldCollect) {
         collect.push(2);
@@ -176,7 +153,7 @@ describe('core/setup global setup', () => {
     };
 
     const Parent = () => {
-      const { observed } = useSetup(setup);
+      const { observed } = useSetupBinds(setup);
 
       if (shouldCollect) {
         collect.push(1);

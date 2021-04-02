@@ -1,13 +1,12 @@
 import { useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import { useReducer } from 'react';
 import { ReactiveEffect, stop, Ref, TraceRef } from '../reactivity';
-import { ISetup, bindSetup } from './create';
+import { createBindsMap, SetupBinds } from './createSetup';
 
 export type ISetupReturn<T> = { [P in keyof T]: T[P] extends Ref ? TraceRef<T[P]> : T[P] };
 
-export function useSetup<P extends Record<string, any>, T extends any[]>(
-  setup: ISetup<P, T>,
-  ...args: T
+export function useSetupBinds<P extends Record<string, any>>(
+  setupBinds: SetupBinds<P>
 ): ISetupReturn<P> {
   const [, forceRender] = useReducer((s) => s + 1, 0);
 
@@ -18,25 +17,14 @@ export function useSetup<P extends Record<string, any>, T extends any[]>(
     forceRender();
   }, []);
 
-  const meta: any = (setup as any).meta;
-
   useMemo(() => {
-    if (meta) {
-      bindsRef.current = meta.bindsMap;
-      meta.tap(scheduler);
-    } else {
-      const { bindsMap, effectsSet } = bindSetup(setup as ISetup<P, T>, scheduler, ...args);
-      bindsRef.current = bindsMap;
-      effectsRef.current = effectsSet;
-    }
+    const { bindsMap, effectsSet } = createBindsMap(setupBinds, scheduler);
+    bindsRef.current = bindsMap;
+    effectsRef.current = effectsSet;
   }, []);
 
   useLayoutEffect(() => {
     return () => {
-      if (meta) {
-        meta.untap(scheduler);
-        return;
-      }
       for (const effect of effectsRef.current) {
         stop(effect);
       }

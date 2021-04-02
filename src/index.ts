@@ -5,7 +5,7 @@ export {
   reactiveTrace,
   computedTrace,
   TraceRef,
-  toRaw
+  toRaw,
 } from './reactivity';
 
-export { reducer, useSetup, create } from './core';
+export { reducer, useCreateSetup, useSetupBinds, createSetup } from './core';

@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { useSetup } from '../useSetup';
 import { reducer } from '../reducer';
 import { reactive, computed } from '../../reactivity';
+import { useCreateSetup } from '../useCreateSetup';
 
 describe('core/component', () => {
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { observed, increase } = useSetup(
+      const { observed, increase } = useCreateSetup(
         (a: number, b: number) => {
           const observed = reactive({ foo: 1 });
           return {
@@ -39,7 +39,7 @@ describe('core/component', () => {
 
   it('should rerender when passed nest observed value', () => {
     const Example = () => {
-      const { observed, increase } = useSetup(() => {
+      const { observed, increase } = useCreateSetup(() => {
         const observed = reactive({ foo: { bar: 1 } });
         return {
           observed: observed.foo,
@@ -66,7 +66,7 @@ describe('core/component', () => {
 
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { cValue, increase } = useSetup(() => {
+      const { cValue, increase } = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         const cValue = computed(() => observed.foo + 1);
         return {
@@ -96,7 +96,7 @@ describe('core/component', () => {
     const fn = jest.fn();
 
     const Example = () => {
-      const { observed, increase } = useSetup(() => {
+      const { observed, increase } = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -134,7 +134,7 @@ describe('core/component', () => {
     };
 
     const Parent = () => {
-      const { observed, increase } = useSetup(() => {
+      const { observed, increase } = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -157,7 +157,7 @@ describe('core/component', () => {
 
   it('should trigger useMemo when nested value change', () => {
     const Parent = () => {
-      const { observed, increase } = useSetup(() => {
+      const { observed, increase } = useCreateSetup(() => {
         const observed = reactive({ foo: { foo: 1 } });
         return {
           observed,
