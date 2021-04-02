@@ -33,11 +33,53 @@ describe('core/setup global setup', () => {
 
     const { getByTestId, queryByText } = render(<Example />);
     expect(queryByText('1')).not.toBeNull();
-
     const node = getByTestId('id');
     fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
     expect(queryByText('2')).not.toBeNull();
   });
+
+  // it('should rerender when change reactive value when use global nostate', () => {
+  //   const setup = create((a: number) => {
+  //     const observed = reactive({ foo: a });
+  //     return {
+  //       observed,
+  //       increase: reducer(() => {
+  //         // triger mutiple action
+  //         observed.foo += 1;
+  //         observed.foo -= 1;
+  //         observed.foo += 1;
+  //       }),
+  //     };
+  //   }, 1);
+
+  //   const Example = () => {
+  //     const { observed, increase } = useSetup(setup);
+
+  //     return (
+  //       <div data-testid="id" onClick={() => increase()}>
+  //         {observed.foo}
+  //       </div>
+  //     );
+  //   };
+
+  //   const Example1 = () => {
+  //     useSetup(setup);
+  //     console.log('adfasdfad')
+  //     return <div />;
+  //   };
+
+  //   const { getByTestId, queryByText } = render(
+  //     <div>
+  //       <Example />
+  //       <Example1 />
+  //     </div>
+  //   );
+  //   expect(queryByText('1')).not.toBeNull();
+  //   console.log('afdasdfcccccccc')
+  //   const node = getByTestId('id');
+  //   fireEvent(node, new MouseEvent('click', { bubbles: true, cancelable: false }));
+  //   expect(queryByText('2')).not.toBeNull();
+  // });
 
   it('should untap listener when component destroy', () => {
     const setupFn = () => {
@@ -58,9 +100,9 @@ describe('core/setup global setup', () => {
     const { queryByText, unmount } = render(<Example />);
     expect(queryByText('1')).not.toBeNull();
 
-    expect(listenersMap[setup as any].length).toBe(1);
+    expect(listenersMap.get(setup as any)!.length).toBe(1);
     unmount();
-    expect(listenersMap[setup as any].length).toBe(0);
+    expect(listenersMap.get(setup as any)!.length).toBe(0);
   });
 
   it('should rerender all instance when change reactive value when use global nostate', () => {

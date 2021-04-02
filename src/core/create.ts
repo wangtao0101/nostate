@@ -7,7 +7,7 @@ import {
   ReactiveEffect,
 } from '../reactivity';
 
-export const listenersMap: Record<any, Function[]> = {} as any;
+export const listenersMap = new Map<any, Function[]>();
 
 export type ISetup<P extends Record<string, any>, T extends any[]> = (..._args: T) => P;
 
@@ -47,17 +47,17 @@ export function create<P extends Record<string, any>, T extends any[]>(
 ): ISetup<P, []> {
   const emptyFn = () => {};
 
-  listenersMap[emptyFn as any] = [];
+  listenersMap.set(emptyFn, []);
 
   const call = function () {
-    listenersMap[emptyFn as any].map((lis) => {
+    listenersMap.get(emptyFn)!.map((lis) => {
       lis();
     });
   };
 
-  const tap = (listener: any) => listenersMap[emptyFn as any].push(listener);
+  const tap = (listener: any) => listenersMap.get(emptyFn)!.push(listener);
   const untap = (listener: any) => {
-    const listeners = listenersMap[emptyFn as any];
+    const listeners = listenersMap.get(emptyFn)!;
     const index = listeners.findIndex((l) => l === listener);
     if (index !== -1) {
       listeners.splice(index, 1);
