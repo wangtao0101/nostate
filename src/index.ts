@@ -8,4 +8,4 @@ export {
   toRaw,
 } from './reactivity';
 
-export { reducer, useCreateSetup, useSetupBinds, createSetup } from './core';
+export { reducer, useCreateSetup, useSetupBinds, createSetup, SetupBinds, ISetup } from './core';

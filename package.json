@@ -1,6 +1,6 @@
 {
   "name": "nostate",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Simple state management for react.",
   "main": "dist/nostate.cjs.js",
   "module": "dist/nostate.es.js",
