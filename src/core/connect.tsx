@@ -21,7 +21,7 @@ type MapToSetup<T, Q> = { [P in keyof T]: getBindType<T[P], Q> };
 export function connect<P extends Record<string, any>, T extends Record<string, SetupBinds<P>>>(
   mapSetupToProps: T,
   extraOptions: ExtraOptions = {}
-): InferableComponentEnhancerWithProps<MapToSetup<T, P>, Record<string, never>> {
+): InferableComponentEnhancerWithProps<MapToSetup<T, P>, Record<string, unknown>> {
   return function wrapWithConnect(WrappedComponent: any) {
     function ConnectFunction(props: any) {
       const { forwardedRef, ...rest } = props;
