@@ -2,11 +2,12 @@ import { renderHook, act } from '@testing-library/react-hooks';
 import { reactive, computed } from '../../reactivity';
 import { reducer } from '../reducer';
 import { useCreateSetup } from '../useCreateSetup';
+import { useSetupBinds } from '../useSetupBinds';
 
 describe('core/useCreateSetup', () => {
   it('should update reactive value', () => {
-    const { result } = renderHook(() =>
-      useCreateSetup(() => {
+    const { result } = renderHook(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -14,8 +15,10 @@ describe('core/useCreateSetup', () => {
             observed.foo += 1;
           }),
         };
-      })
-    );
+      });
+
+      return useSetupBinds(setupBinds);
+    });
 
     const { observed, increase } = result.current;
 
@@ -29,8 +32,8 @@ describe('core/useCreateSetup', () => {
   });
 
   it('should update computed value', () => {
-    const { result } = renderHook(() =>
-      useCreateSetup(() => {
+    const { result } = renderHook(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
 
         const cValue = computed(() => observed.foo + 1);
@@ -40,8 +43,9 @@ describe('core/useCreateSetup', () => {
             observed.foo += 1;
           }),
         };
-      })
-    );
+      });
+      return useSetupBinds(setupBinds);
+    });
 
     const { cValue, increase } = result.current;
 

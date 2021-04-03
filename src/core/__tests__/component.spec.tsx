@@ -4,11 +4,12 @@ import '@testing-library/jest-dom/extend-expect';
 import { reducer } from '../reducer';
 import { reactive, computed } from '../../reactivity';
 import { useCreateSetup } from '../useCreateSetup';
+import { useSetupBinds } from '../useSetupBinds';
 
 describe('core/component', () => {
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { observed, increase } = useCreateSetup(
+      const setupBinds = useCreateSetup(
         (a: number, b: number) => {
           const observed = reactive({ foo: 1 });
           return {
@@ -21,6 +22,8 @@ describe('core/component', () => {
         0.5,
         0.5
       );
+
+      const { observed, increase } = useSetupBinds(setupBinds);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -39,7 +42,7 @@ describe('core/component', () => {
 
   it('should rerender when passed nest observed value', () => {
     const Example = () => {
-      const { observed, increase } = useCreateSetup(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: { bar: 1 } });
         return {
           observed: observed.foo,
@@ -48,6 +51,8 @@ describe('core/component', () => {
           }),
         };
       });
+
+      const { observed, increase } = useSetupBinds(setupBinds);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -66,7 +71,7 @@ describe('core/component', () => {
 
   it('should rerender when change reactive value', () => {
     const Example = () => {
-      const { cValue, increase } = useCreateSetup(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         const cValue = computed(() => observed.foo + 1);
         return {
@@ -76,6 +81,8 @@ describe('core/component', () => {
           }),
         };
       });
+
+      const { cValue, increase } = useSetupBinds(setupBinds);
 
       return (
         <div data-testid="id" onClick={() => increase()}>
@@ -96,7 +103,7 @@ describe('core/component', () => {
     const fn = jest.fn();
 
     const Example = () => {
-      const { observed, increase } = useCreateSetup(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -106,6 +113,8 @@ describe('core/component', () => {
           }),
         };
       });
+
+      const { observed, increase } = useSetupBinds(setupBinds);
 
       fn();
 
@@ -134,7 +143,7 @@ describe('core/component', () => {
     };
 
     const Parent = () => {
-      const { observed, increase } = useCreateSetup(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: 1 });
         return {
           observed,
@@ -143,6 +152,8 @@ describe('core/component', () => {
           }),
         };
       });
+
+      const { observed, increase } = useSetupBinds(setupBinds);
 
       return <Child observed={observed} increase={increase} />;
     };
@@ -157,7 +168,7 @@ describe('core/component', () => {
 
   it('should trigger useMemo when nested value change', () => {
     const Parent = () => {
-      const { observed, increase } = useCreateSetup(() => {
+      const setupBinds = useCreateSetup(() => {
         const observed = reactive({ foo: { foo: 1 } });
         return {
           observed,
@@ -166,6 +177,8 @@ describe('core/component', () => {
           }),
         };
       });
+
+      const { observed, increase } = useSetupBinds(setupBinds);
 
       const v = useMemo(() => observed.foo.foo, [observed.foo]);
 
