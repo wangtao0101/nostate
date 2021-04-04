@@ -21,7 +21,7 @@ export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> 
       type: ReactiveEffectType.TRACE,
       scheduler: () => {
         scheduler();
-      }
+      },
     });
     schedulerMap.set(scheduler, runner);
   }
@@ -29,11 +29,15 @@ export function reactiveTrace<T>(target: T, scheduler: () => void): TraceRef<T> 
   const value = toReactive(target, null, runner);
 
   return {
-    _isTraceRef: true,
+    _isReactiveTraceRef: true,
     // expose effect so trace ref can be stopped
     effect: runner,
-    value
+    value,
   } as any;
+}
+
+export function isReactiveTrace(r: any) {
+  return r ? r._isReactiveTraceRef === true : false;
 }
 
 export function computedTrace<T>(computedRef: ComputedRef, scheduler: () => void): TraceRef<T> {
@@ -43,11 +47,11 @@ export function computedTrace<T>(computedRef: ComputedRef, scheduler: () => void
     type: ReactiveEffectType.TRACE,
     scheduler: () => {
       scheduler();
-    }
+    },
   });
 
   return {
-    _isTraceRef: true,
+    _isComputedTraceRef: true,
     // expose effect so trace ref can be stopped
     effect: runner,
     get value() {
@@ -61,6 +65,10 @@ export function computedTrace<T>(computedRef: ComputedRef, scheduler: () => void
         }
       }
       return value;
-    }
+    },
   } as any;
+}
+
+export function isComputedTrace(r: any) {
+  return r ? r._isComputedTraceRef === true : false;
 }

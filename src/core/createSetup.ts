@@ -29,7 +29,7 @@ export function createBindsMap<P extends Record<string, any>>(
       effectsSet.add(ref.effect);
     } else if (isReactive(bind)) {
       const ref = reactiveTrace(toRaw(bind), callback);
-      bindsMap[bindKey] = ref.value;
+      bindsMap[bindKey] = ref;
       effectsSet.add(ref.effect);
     } else {
       bindsMap[bindKey] = bind;

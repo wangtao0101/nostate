@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { useReducer, useCallback, useRef, useMemo, useLayoutEffect } from 'react';
 import { forwardComponent } from '../utils/forwardComponent';
-import { ReactiveEffect, stop } from '../reactivity';
+import { ReactiveEffect, stop, toRaw } from '../reactivity';
 import { createBindsMap, SetupBinds } from './createSetup';
+import { isReactiveTrace } from '../reactivity/traceRef';
+import { toReactive } from '../reactivity/reactive';
 
 interface ExtraOptions {
   forwardRef?: any;
@@ -29,7 +31,7 @@ export function connect<P extends Record<string, any>, T extends Record<string, 
       const [, forceRender] = useReducer((s) => s + 1, 0);
 
       const effectsRef = useRef<Array<Set<ReactiveEffect>>>([]);
-      const bindsRef = useRef<any>({});
+      const bindsMapRef = useRef<any>({});
 
       const scheduler = useCallback(() => {
         forceRender();
@@ -40,7 +42,7 @@ export function connect<P extends Record<string, any>, T extends Record<string, 
           const setupBinds = mapSetupToProps[key];
 
           const { bindsMap, effectsSet } = createBindsMap(setupBinds, scheduler);
-          bindsRef.current[key] = bindsMap;
+          bindsMapRef.current[key] = bindsMap;
           effectsRef.current.push(effectsSet);
         });
       }, []);
@@ -62,7 +64,23 @@ export function connect<P extends Record<string, any>, T extends Record<string, 
         };
       }, []);
 
-      return <WrappedComponent {...rest} {...bindsRef.current} ref={forwardedRef} />;
+      const newBindsMap: any = {};
+      Object.keys(bindsMapRef.current).map((setupKey) => {
+        const setupKeyBinds: any = {};
+        newBindsMap[setupKey] = setupKeyBinds;
+
+        Object.keys(bindsMapRef.current[setupKey]).map((bindKey) => {
+          const ref = bindsMapRef.current[setupKey][bindKey];
+          if (isReactiveTrace(ref)) {
+            const value = toReactive(toRaw(ref.value), null, ref.effect);
+            setupKeyBinds[bindKey] = value;
+          } else {
+            setupKeyBinds[bindKey] = ref;
+          }
+        });
+      });
+
+      return <WrappedComponent {...rest} {...newBindsMap} ref={forwardedRef} />;
     }
 
     return forwardComponent(
