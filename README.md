@@ -1,4 +1,5 @@
 # nostate
+
 [![Github action Status](https://github.com/wangtao0101/nostate/workflows/build/badge.svg)](https://github.com/wangtao0101/nostate/actions)
 [![Coverage Status](https://coveralls.io/repos/github/wangtao0101/nostate/badge.svg)](https://coveralls.io/github/wangtao0101/nostate)
 [![npm](https://img.shields.io/npm/v/nostate.svg?label=)](https://www.npmjs.com/package/nostate)
@@ -41,7 +42,7 @@ Component scope state.
 import { reactive, reducer } from 'nostate';
 
 const sleep = () => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, 2000);
   });
 };
@@ -63,13 +64,13 @@ export const setup = () => {
   return {
     state,
     increase,
-    asyncIncrease
+    asyncIncrease,
   };
 };
 
 export function App() {
   // state is immutable here
-  const { state, increase, asyncIncrease } = useSetup(setup);
+  const { state, increase, asyncIncrease } = useSetupBinds(setup);
 
   return (
     <div>
@@ -86,10 +87,10 @@ Global scope state
 > Every component has same state when they use the global setup
 
 ```js
-import { reactive, reducer, create } from 'nostate';
+import { reactive, reducer, createSetup } from 'nostate';
 
 // create will run wrap function immediately
-export const setup = create(() => {
+export const setup = createSetup(() => {
   const state = reactive({ count: 0 });
 
   const increase = reducer((num: number) => {
@@ -98,12 +99,12 @@ export const setup = create(() => {
 
   return {
     state,
-    increase
+    increase,
   };
 });
 
 export function App() {
-  const { state, increase } = useSetup(setup);
+  const { state, increase } = useSetupBinds(setup);
 
   return (
     <div>
