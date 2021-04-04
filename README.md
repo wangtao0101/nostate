@@ -70,7 +70,8 @@ export const setup = () => {
 
 export function App() {
   // state is immutable here
-  const { state, increase, asyncIncrease } = useSetupBinds(setup);
+  const setupBinds = useCreateSetup(setup);
+  const { state, increase, asyncIncrease } = useSetupBinds(setupBinds);
 
   return (
     <div>
