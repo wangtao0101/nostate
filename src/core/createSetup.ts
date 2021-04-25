@@ -9,10 +9,13 @@ import {
 
 export type ISetup<P extends Record<string, any>, T extends any[]> = (..._args: T) => P;
 
+export type GetSetupBinds<T> = T extends (..._args: any) => any ? SetupBinds<ReturnType<T>> : T;
+
 export interface SetupBinds<P extends Record<string, any>> {
   binds: P;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function createBindsMap<P extends Record<string, any>>(
   setupBinds: SetupBinds<P>,
   callback: () => void

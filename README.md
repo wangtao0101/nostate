@@ -31,6 +31,7 @@ Currently the immutable feature is not fully realized, it is more proper to say 
 ## Example
 
 [count](https://codesandbox.io/s/bold-sanderson-cshtw)
+[share value](https://codesandbox.io/s/determined-wood-2ymxh?file=/src/globalState.ts)
 
 ## Usage
 
